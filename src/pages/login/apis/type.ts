@@ -1,10 +1,10 @@
 export interface LoginRequestData {
   /** admin 或 editor */
-  username: "admin" | "editor"
+  email: string
   /** 密码 */
   password: string
   /** 验证码 */
-  code: string
+  code?: string
 }
 
 export type CaptchaResponseData = ApiResponseData<string>
@@ -36,4 +36,4 @@ export interface LoginResponse {
   user: User
 }
 
-export type LoginResponseData = ApiResponseData<LoginResponseData>
+export type LoginResponseData = ApiResponseData<LoginResponse>
