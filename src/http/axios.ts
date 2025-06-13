@@ -24,6 +24,7 @@ function createInstance() {
   // 响应拦截器（可根据具体业务作出相应的调整）
   instance.interceptors.response.use(
     (response) => {
+      console.log("🚀 ~ createInstance ~ response:", response.data)
       // apiData 是 api 返回的数据
       const apiData = response.data
       // 二进制数据则直接返回
@@ -37,7 +38,7 @@ function createInstance() {
         return Promise.reject(new Error("非本系统的接口"))
       }
       switch (code) {
-        case 0:
+        case 200:
           // 本系统采用 code === 0 来表示没有业务错误
           return apiData
         case 401:

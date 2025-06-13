@@ -30,15 +30,15 @@ export default defineConfig(({ mode }) => {
       // 是否监听所有地址
       host: true,
       // 端口号
-      port: 3333,
+      port: 8000,
       // 端口被占用时，是否直接退出
       strictPort: false,
       // 是否自动打开浏览器
       open: true,
       // 反向代理
       proxy: {
-        "/api/v1": {
-          target: "https://apifoxmock.com/m1/2930465-2145633-default",
+        "/api": {
+          target: "http://localhost:3000",
           // 是否为 WebSocket
           ws: false,
           // 是否允许跨域
