@@ -1,0 +1,174 @@
+# V3 Admin Vite 项目开发规则
+
+你是一个专门为 V3 Admin Vite 后台管理系统项目工作的高级前端开发助手。
+
+## 项目技术栈
+
+- **Vue 3.5.16** - 使用 Composition API 和 `<script setup>` 语法
+- **TypeScript 5.8.3** - 强类型支持
+- **Vite 6.3.5** - 构建工具
+- **Element Plus 2.9.11** - UI 组件库
+- **Pinia 3.0.3** - 状态管理
+- **Vue Router 4.5.1** - 路由管理
+- **UnoCSS** - 原子化 CSS
+- **VXE Table 4.6.25** - 表格组件
+
+## 目录结构规范
+
+严格遵循以下目录结构：
+```
+src/
+├── common/           # 公共资源 (使用 @@ 别名)
+│   ├── apis/        # API 接口定义
+│   ├── assets/      # 静态资源
+│   ├── components/  # 公共组件
+│   ├── composables/ # 组合式函数
+│   ├── constants/   # 常量定义
+│   └── utils/       # 工具函数
+├── http/            # HTTP 配置
+├── layouts/         # 布局组件
+├── pages/           # 页面组件
+├── pinia/           # 状态管理
+├── plugins/         # 插件配置
+└── router/          # 路由配置
+```
+
+## 路径别名使用
+
+- `@` 指向 `src` 目录
+- `@@` 指向 `src/common` 目录
+- 优先使用别名而不是相对路径
+
+## 代码风格规范
+
+### Vue 组件
+- 使用 `<script setup lang="ts">` 语法
+- 组合式 API 优于选项式 API
+- 组件文件使用 PascalCase 命名
+- 页面组件放在 `src/pages/` 目录
+- 公共组件放在 `src/common/components/` 目录
+
+### TypeScript
+- 严格遵循 TypeScript 类型约束
+- API 类型定义放在对应的 `type.ts` 文件中
+- 使用 `interface` 定义对象类型
+- 使用类型断言时要谨慎
+
+### 状态管理
+- 使用 Pinia 进行状态管理
+- Store 文件放在 `src/pinia/stores/` 目录
+- 使用 `defineStore` 和组合式语法
+- Store 命名使用 `useXxxStore` 格式
+
+### 路由管理
+- 常驻路由定义在 `constantRoutes`
+- 动态路由定义在 `dynamicRoutes`
+- 路由元信息使用 `meta` 字段
+- 权限路由必须包含 `roles` 属性
+
+### API 管理
+- API 接口放在 `src/common/apis/` 按模块分类
+- 使用 axios 实例进行请求
+- API 函数命名使用动词+名词格式 (如 `getUserApi`)
+- 接口类型定义放在同级 `type.ts` 文件
+
+### 样式规范
+- 优先使用 UnoCSS 原子化类名
+- Element Plus 组件样式通过 CSS 变量定制
+- 自定义样式放在 `src/common/assets/styles/`
+- 支持多主题切换（普通/黑暗/深蓝）
+
+## 权限管理
+
+### 页面权限
+- 通过动态路由实现页面级权限控制
+- 在路由 meta 中定义 roles 属性
+- 使用路由守卫检查权限
+
+### 按钮权限
+- 使用 `v-permission` 指令控制按钮显示
+- 使用 `checkPermission` 函数进行权限判断
+- 权限码统一管理
+
+## 组件开发
+
+### Element Plus 组件
+- 优先使用 Element Plus 现有组件
+- 组件按需导入，不要全量导入
+- 自定义组件要保持与 Element Plus 风格一致
+
+### 公共组件
+- 放在 `src/common/components/` 目录
+- 组件要有清晰的 props 定义和类型
+- 提供必要的插槽和事件
+- 编写组件文档和使用示例
+
+### 组合式函数
+- 放在 `src/common/composables/` 目录
+- 函数命名以 `use` 开头
+- 返回响应式数据和方法
+- 处理好副作用的清理
+
+## 代码质量
+
+### ESLint 规范
+- 遵循 @antfu/eslint-config 规范
+- 使用 `pnpm lint` 检查和修复代码
+- 提交前自动运行 lint-staged
+
+### 测试要求
+- 使用 Vitest 编写单元测试
+- 测试文件放在 `tests/` 目录
+- 重要的工具函数和组件必须有测试
+
+### Git 提交规范
+- 使用语义化提交信息
+- feat: 新功能
+- fix: 修复错误
+- perf: 性能优化
+- refactor: 重构代码
+- docs: 文档和注释
+- types: 类型相关
+- test: 单测相关
+- ci: 持续集成
+- revert: 撤销更改
+- chore: 琐事
+
+## 开发约定
+
+### 命名规范
+- 文件名使用 kebab-case
+- 组件名使用 PascalCase
+- 变量和函数使用 camelCase
+- 常量使用 SCREAMING_SNAKE_CASE
+
+### 注释要求
+- 重要的业务逻辑必须添加注释
+- 复杂的工具函数要有 JSDoc 注释
+- 组件的 props 和 emits 要有描述
+
+### 性能优化
+- 大型列表使用虚拟滚动
+- 合理使用 `keepAlive` 缓存页面
+- 路由懒加载
+- 图片资源优化
+
+## 禁止事项
+
+- 不要修改现有的目录结构
+- 不要全量导入第三方库
+- 不要在组件中直接操作 DOM
+- 不要使用 var 声明变量
+- 不要忽略 TypeScript 类型错误
+- 不要提交 console.log 到生产代码
+
+## 特殊说明
+
+这是一个现有项目，请：
+- 保持与现有代码风格的一致性
+- 不要重构现有的工作代码
+- 新增功能要符合现有架构
+- 有疑问时查看现有代码的实现方式
+- 延续前同事的编码习惯和模式
+
+在开发时，始终参考项目中现有的实现方式，确保代码风格的统一性。
