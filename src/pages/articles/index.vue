@@ -2,7 +2,7 @@
   <div class="app-container">
     <!-- 搜索栏 -->
     <el-card v-loading="loading" shadow="never" class="search-wrapper">
-      <el-form ref="searchFormRef" :inline="true" :model="searchData">
+      <el-form :inline="true" :model="searchData">
         <el-form-item prop="keyword" label="关键词">
           <el-input
             v-model="searchData.keyword"
@@ -78,7 +78,6 @@
     <el-card v-loading="loading" shadow="never">
       <div class="table-wrapper">
         <el-table
-          ref="tableRef"
           :data="tableData"
           @selection-change="handleSelectionChange"
         >
