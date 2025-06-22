@@ -284,7 +284,7 @@ const getTableData = async () => {
   try {
     const params: ArticleListRequest = {
       page: paginationData.currentPage,
-      pageSize: paginationData.pageSize,
+      page_size: paginationData.page_size,
       ...searchData,
     };
 

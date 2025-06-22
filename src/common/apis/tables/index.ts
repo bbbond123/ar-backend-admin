@@ -29,8 +29,8 @@ export function updateTableDataApi(data: CreateOrUpdateTableRequestData) {
 }
 
 /** 查 */
-export function getTableDataApi(params: TableRequestData) {
-  return request<IResponse<TableData>>({
+export function getTableDataApi(params: TableRequestData): Promise<IResponse<TableData>> {
+  return request({
     url: "tables",
     method: "get",
     params

@@ -70,7 +70,7 @@ export interface UpdateArticleRequest {
 /** 文章列表请求 */
 export interface ArticleListRequest {
   page?: number
-  pageSize?: number
+  page_size?: number
   category?: string
   author?: string
   status?: 'draft' | 'published' | 'archived'

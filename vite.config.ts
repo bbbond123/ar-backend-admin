@@ -38,8 +38,8 @@ export default defineConfig(({ mode }) => {
       // 反向代理
       proxy: {
         "/api": {
-          target: "http://localhost:3000",
-          // target: "https://www.ifoodme.com",
+          // target: "http://localhost:3000",
+          target: "https://www.ifoodme.com",
           // 是否为 WebSocket
           ws: false,
           // 是否允许跨域

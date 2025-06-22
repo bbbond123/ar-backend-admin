@@ -91,7 +91,7 @@ function getTableData() {
   loading.value = true
   getTableDataApi({
     currentPage: paginationData.currentPage,
-    size: paginationData.pageSize,
+    size: paginationData.pageSize!,
     username: searchData.username,
     phone: searchData.phone
   }).then((res) => {

@@ -2,7 +2,7 @@ interface PaginationData {
   total?: number
   currentPage?: number
   pageSizes?: number[]
-  pageSize?: number
+  page_size?: number
   layout?: string
 }
 
@@ -11,7 +11,7 @@ const DEFAULT_PAGINATION_DATA = {
   total: 0,
   currentPage: 1,
   pageSizes: [10, 20, 50],
-  pageSize: 10,
+  page_size: 10,
   layout: "total, sizes, prev, pager, next, jumper"
 }
 
@@ -25,7 +25,7 @@ export function usePagination(initPaginationData: PaginationData = {}) {
   }
   // 改变每页显示条数
   const handleSizeChange = (value: number) => {
-    paginationData.pageSize = value
+    paginationData.page_size = value
   }
 
   return { paginationData, handleCurrentChange, handleSizeChange }
