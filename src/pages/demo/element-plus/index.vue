@@ -91,7 +91,7 @@ function getTableData() {
   loading.value = true
   getTableDataApi({
     currentPage: paginationData.currentPage,
-    size: paginationData.pageSize!,
+    size: paginationData.page_size!,
     username: searchData.username,
     phone: searchData.phone
   }).then((res) => {
@@ -118,7 +118,7 @@ function resetSearch() {
 // #endregion
 
 // 监听分页参数的变化
-watch([() => paginationData.currentPage, () => paginationData.pageSize], getTableData, { immediate: true })
+watch([() => paginationData.currentPage, () => paginationData.page_size], getTableData, { immediate: true })
 </script>
 
 <template>
@@ -211,7 +211,7 @@ watch([() => paginationData.currentPage, () => paginationData.pageSize], getTabl
           :layout="paginationData.layout"
           :page-sizes="paginationData.pageSizes"
           :total="paginationData.total"
-          :page-size="paginationData.pageSize"
+          :page-size="paginationData.page_size"
           :current-page="paginationData.currentPage"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"

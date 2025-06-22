@@ -2,7 +2,7 @@
   <div class="app-container">
     <!-- 搜索栏 -->
     <el-card v-loading="loading" shadow="never" class="search-wrapper">
-      <el-form ref="searchFormRef" :inline="true" :model="searchData">
+      <el-form :inline="true" :model="searchData">
         <el-form-item prop="keyword" label="关键词">
           <el-input
             v-model="searchData.keyword"
@@ -78,7 +78,6 @@
     <el-card v-loading="loading" shadow="never">
       <div class="table-wrapper">
         <el-table
-          ref="tableRef"
           :data="tableData"
           @selection-change="handleSelectionChange"
         >
@@ -201,7 +200,7 @@
           :layout="paginationData.layout"
           :page-sizes="paginationData.pageSizes"
           :total="paginationData.total"
-          :page-size="paginationData.pageSize"
+          :page-size="paginationData.page_size"
           :current-page="paginationData.currentPage"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -430,7 +429,7 @@ const formatDateTime = (dateTime: string) => {
 
 // 监听分页变化
 watch(
-  [() => paginationData.currentPage, () => paginationData.pageSize],
+  [() => paginationData.currentPage, () => paginationData.page_size],
   getTableData,
   { immediate: true }
 );
