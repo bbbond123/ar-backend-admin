@@ -284,18 +284,18 @@ const getTableData = async () => {
   try {
     const params: ArticleListRequest = {
       page: paginationData.currentPage,
-      page_size: paginationData.pageSize,
+      pageSize: paginationData.pageSize,
       ...searchData,
     };
 
     const res = await getArticleListApi(params);
 
     if (res.code === 200) {
-      console.log("🚀 ~ getTableData ~ res:", res)
+      console.log("🚀 ~ getTableData ~ res:", res);
       tableData.value = res.data;
       paginationData.total = res.total;
     } else {
-      ElMessage.error(res.message);
+      ElMessage.error(res.errMessage);
     }
   } catch (error) {
     console.error("获取文章列表失败:", error);
@@ -396,7 +396,7 @@ const handleBatchDelete = () => {
 };
 
 // 状态标签类型
-const getStatusTagType = (status: string) => {
+const getStatusTagType = (status: string): "success" | "warning" | "info" => {
   switch (status) {
     case "published":
       return "success";
@@ -405,7 +405,7 @@ const getStatusTagType = (status: string) => {
     case "archived":
       return "info";
     default:
-      return "";
+      return "info";
   }
 };
 

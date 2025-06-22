@@ -1,11 +1,11 @@
 import type * as Articles from "./type"
 import { request } from "@/http/axios"
-import { Article } from "./type"
+import { Article, ArticleComments, LikeAricle } from "./type"
 import { IBaseResponse, IResponse } from "../type"
 
 /** 获取文章列表 */
-export function getArticleListApi(data: Articles.ArticleListRequest) {
-  return request<IResponse<Article>>({
+export function getArticleListApi(data: Articles.ArticleListRequest): Promise<IResponse<Article>> {
+  return request({
     url: "articles/list",
     method: "post",
     data
@@ -13,16 +13,16 @@ export function getArticleListApi(data: Articles.ArticleListRequest) {
 }
 
 /** 获取文章详情 */
-export function getArticleApi(articleId: string) {
-  return request<IBaseResponse<Article>>({
+export function getArticleApi(articleId: string): Promise<IBaseResponse<Article>> {
+  return request({
     url: `articles/${articleId}`,
     method: "get"
   })
 }
 
 /** 创建文章 */
-export function createArticleApi(data: Articles.CreateArticleRequest) {
-  return request<IBaseResponse<Article>>({
+export function createArticleApi(data: Articles.CreateArticleRequest): Promise<IBaseResponse<Article>> {
+  return request({
     url: "articles",
     method: "post",
     data
@@ -30,7 +30,7 @@ export function createArticleApi(data: Articles.CreateArticleRequest) {
 }
 
 /** 创建文章（支持图片上传） */
-export function createArticleWithImageApi(data: Articles.CreateArticleWithImageRequest) {
+export function createArticleWithImageApi(data: Articles.CreateArticleWithImageRequest): Promise<IBaseResponse<Article>> {
   const formData = new FormData()
 
   // 添加文章基本信息
@@ -53,7 +53,7 @@ export function createArticleWithImageApi(data: Articles.CreateArticleWithImageR
     })
   }
 
-  return request<IBaseResponse<Article>>({
+  return request({
     url: "articles/with-image",
     method: "post",
     data: formData,
@@ -64,8 +64,8 @@ export function createArticleWithImageApi(data: Articles.CreateArticleWithImageR
 }
 
 /** 更新文章 */
-export function updateArticleApi(articleId: string, data: Articles.UpdateArticleRequest) {
-  return request<IBaseResponse<Article>>({
+export function updateArticleApi(articleId: string, data: Articles.UpdateArticleRequest): Promise<IBaseResponse<Article>> {
+  return request({
     url: "articles",
     method: "put",
     data: { ...data, id: articleId }
@@ -73,30 +73,24 @@ export function updateArticleApi(articleId: string, data: Articles.UpdateArticle
 }
 
 /** 删除文章 */
-export function deleteArticleApi(articleId: string) {
-  return request<IBaseResponse<boolean>>({
+export function deleteArticleApi(articleId: string): Promise<IBaseResponse<boolean>> {
+  return request({
     url: `articles/${articleId}`,
     method: "delete"
   })
 }
 
 /** 获取文章评论 */
-export function getArticleCommentsApi(articleId: string) {
-  return request<IBaseResponse<{
-    comments: Articles.ArticleComment[]
-    total: number
-  }>>({
+export function getArticleCommentsApi(articleId: string): Promise<IBaseResponse<ArticleComments>> {
+  return request({
     url: `articles/${articleId}/comments`,
     method: "get"
   })
 }
 
 /** 文章点赞 */
-export function likeArticleApi(articleId: string) {
-  return request<IBaseResponse<{
-    liked: boolean
-    like_count: number
-  }>>({
+export function likeArticleApi(articleId: string): Promise<IBaseResponse<LikeAricle>> {
+  return request({
     url: `articles/${articleId}/like`,
     method: "post"
   })
@@ -104,7 +98,7 @@ export function likeArticleApi(articleId: string) {
 
 /** 搜索附近文章 */
 export function getNearbyArticlesApi(data: Articles.NearbyArticlesRequest) {
-  return request<IResponse<Articles.Article>>({
+  return request({
     url: "articles/nearby",
     method: "post",
     data

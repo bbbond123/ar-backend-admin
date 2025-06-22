@@ -100,7 +100,7 @@ function getTableData() {
       tableData.value = res.data
     } else {
       tableData.value = []
-      ElMessage.error(res.message || "获取数据失败")
+      ElMessage.error(res.errMessage || "获取数据失败")
     }
   }).catch(() => {
     tableData.value = []

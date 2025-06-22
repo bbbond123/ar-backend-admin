@@ -16,14 +16,26 @@
               {{ getStatusText(articleData.status) }}
             </el-tag>
             <span class="meta-item">作者：{{ articleData.author }}</span>
-            <span class="meta-item" v-if="articleData.category">分类：{{ articleData.category }}</span>
-            <span class="meta-item">创建时间：{{ formatDateTime(articleData.created_at) }}</span>
-            <span class="meta-item">更新时间：{{ formatDateTime(articleData.updated_at) }}</span>
+            <span class="meta-item" v-if="articleData.category"
+              >分类：{{ articleData.category }}</span
+            >
+            <span class="meta-item"
+              >创建时间：{{ formatDateTime(articleData.created_at) }}</span
+            >
+            <span class="meta-item"
+              >更新时间：{{ formatDateTime(articleData.updated_at) }}</span
+            >
           </div>
           <div class="article-stats">
-            <el-tag type="info" size="small">浏览：{{ articleData.view_count }}</el-tag>
-            <el-tag type="success" size="small">点赞：{{ articleData.like_count }}</el-tag>
-            <el-tag type="warning" size="small">评论：{{ articleData.comment_count }}</el-tag>
+            <el-tag type="info" size="small"
+              >浏览：{{ articleData.view_count }}</el-tag
+            >
+            <el-tag type="success" size="small"
+              >点赞：{{ articleData.like_count }}</el-tag
+            >
+            <el-tag type="warning" size="small"
+              >评论：{{ articleData.comment_count }}</el-tag
+            >
           </div>
         </div>
 
@@ -44,7 +56,10 @@
         </div>
 
         <!-- 文章标签 -->
-        <div v-if="articleData.tags && articleData.tags.length" class="article-tags">
+        <div
+          v-if="articleData.tags && articleData.tags.length"
+          class="article-tags"
+        >
           <h3>标签</h3>
           <el-tag
             v-for="tag in articleData.tags"
@@ -52,7 +67,7 @@
             size="small"
             type="primary"
             effect="plain"
-            style="margin-right: 8px;"
+            style="margin-right: 8px"
           >
             {{ tag }}
           </el-tag>
@@ -65,7 +80,10 @@
         </div>
 
         <!-- 文章图片 -->
-        <div v-if="articleData.images && articleData.images.length" class="article-images">
+        <div
+          v-if="articleData.images && articleData.images.length"
+          class="article-images"
+        >
           <h3>相关图片</h3>
           <div class="image-gallery">
             <el-image
@@ -85,9 +103,13 @@
           <h3>位置信息</h3>
           <p>
             <el-icon><Location /></el-icon>
-            <span v-if="articleData.location.address">{{ articleData.location.address }}</span>
+            <span v-if="articleData.location.address">{{
+              articleData.location.address
+            }}</span>
             <span v-else>
-              纬度：{{ articleData.location.latitude }}，经度：{{ articleData.location.longitude }}
+              纬度：{{ articleData.location.latitude }}，经度：{{
+                articleData.location.longitude
+              }}
             </span>
           </p>
         </div>
@@ -107,136 +129,136 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue"
-import { ElMessage } from "element-plus"
-import { Location } from "@element-plus/icons-vue"
-import { getArticleApi, likeArticleApi } from "@@/apis/articles"
-import type { Article } from "@@/apis/articles/type"
+import { ref, watch } from "vue";
+import { ElMessage } from "element-plus";
+import { Location } from "@element-plus/icons-vue";
+import { getArticleApi, likeArticleApi } from "@@/apis/articles";
+import type { Article } from "@@/apis/articles/type";
 
 interface Props {
-  modelValue: boolean
-  articleId: string
+  modelValue: boolean;
+  articleId: string;
 }
 
 interface Emits {
-  (e: "update:modelValue", value: boolean): void
-  (e: "refresh"): void
-  (e: "edit", articleId: string): void
+  (e: "update:modelValue", value: boolean): void;
+  (e: "refresh"): void;
+  (e: "edit", articleId: string): void;
 }
 
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
 
-const dialogVisible = ref(false)
-const loading = ref(false)
-const liking = ref(false)
-const articleData = ref<Article | null>(null)
+const dialogVisible = ref(false);
+const loading = ref(false);
+const liking = ref(false);
+const articleData = ref<Article | null>(null);
 
 // 监听 modelValue 变化
 watch(
   () => props.modelValue,
   (val) => {
-    dialogVisible.value = val
+    dialogVisible.value = val;
     if (val && props.articleId) {
-      getArticleDetail()
+      getArticleDetail();
     }
   },
   { immediate: true }
-)
+);
 
 // 监听 dialogVisible 变化
 watch(dialogVisible, (val) => {
-  emit("update:modelValue", val)
-})
+  emit("update:modelValue", val);
+});
 
 // 获取文章详情
 const getArticleDetail = async () => {
-  if (!props.articleId) return
+  if (!props.articleId) return;
 
-  loading.value = true
+  loading.value = true;
   try {
-    const res = await getArticleApi(props.articleId)
+    const res = await getArticleApi(props.articleId);
     if (res.success) {
-      articleData.value = res.data
+      articleData.value = res.data;
     } else {
-      ElMessage.error(res.errMessage || "获取文章详情失败")
+      ElMessage.error(res.errMessage || "获取文章详情失败");
     }
   } catch (error) {
-    console.error("获取文章详情失败:", error)
-    ElMessage.error("获取文章详情失败")
+    console.error("获取文章详情失败:", error);
+    ElMessage.error("获取文章详情失败");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // 关闭弹窗
 const handleClose = () => {
-  dialogVisible.value = false
-  articleData.value = null
-}
+  dialogVisible.value = false;
+  articleData.value = null;
+};
 
 // 编辑文章
 const handleEdit = () => {
-  emit("edit", props.articleId)
-  handleClose()
-}
+  emit("edit", props.articleId);
+  handleClose();
+};
 
 // 点赞文章
 const handleLike = async () => {
-  if (!props.articleId) return
+  if (!props.articleId) return;
 
-  liking.value = true
+  liking.value = true;
   try {
-    const res = await likeArticleApi(props.articleId)
+    const res = await likeArticleApi(props.articleId);
     if (res.success) {
       if (articleData.value) {
-        articleData.value.like_count = res.data.like_count
+        articleData.value.like_count = res.data.like_count;
       }
-      ElMessage.success(res.data.liked ? "点赞成功" : "取消点赞")
-      emit("refresh")
+      ElMessage.success(res.data.liked ? "点赞成功" : "取消点赞");
+      emit("refresh");
     } else {
-      ElMessage.error(res.errMessage || "点赞失败")
+      ElMessage.error(res.errMessage || "点赞失败");
     }
   } catch (error) {
-    console.error("点赞失败:", error)
-    ElMessage.error("点赞失败")
+    console.error("点赞失败:", error);
+    ElMessage.error("点赞失败");
   } finally {
-    liking.value = false
+    liking.value = false;
   }
-}
+};
 
 // 状态标签类型
-const getStatusTagType = (status: string) => {
+const getStatusTagType = (status: string): any => {
   switch (status) {
     case "published":
-      return "success"
+      return "success";
     case "draft":
-      return "warning"
+      return "warning";
     case "archived":
-      return "info"
+      return "info";
     default:
-      return ""
+      return "";
   }
-}
+};
 
 // 状态文本
 const getStatusText = (status: string) => {
   switch (status) {
     case "published":
-      return "已发布"
+      return "已发布";
     case "draft":
-      return "草稿"
+      return "草稿";
     case "archived":
-      return "已归档"
+      return "已归档";
     default:
-      return status
+      return status;
   }
-}
+};
 
 // 格式化日期时间
 const formatDateTime = (dateTime: string) => {
-  return new Date(dateTime).toLocaleString("zh-CN")
-}
+  return new Date(dateTime).toLocaleString("zh-CN");
+};
 </script>
 
 <style lang="scss" scoped>

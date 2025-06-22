@@ -70,7 +70,7 @@ export interface UpdateArticleRequest {
 /** 文章列表请求 */
 export interface ArticleListRequest {
   page?: number
-  page_size?: number
+  pageSize?: number
   category?: string
   author?: string
   status?: 'draft' | 'published' | 'archived'
@@ -94,14 +94,11 @@ export interface CreateArticleWithImageRequest extends CreateArticleRequest {
   images?: File[]
 }
 
-/** API 响应类型 */
-export type ArticleResponseData = ApiResponseData<Article>
-
-export type ArticleCommentsResponseData = ApiResponseData<{
+export interface ArticleComments {
   comments: ArticleComment[]
   total: number
-}>
-export type LikeResponseData = ApiResponseData<{
+}
+export interface LikeAricle {
   liked: boolean
   like_count: number
-}>
+}
