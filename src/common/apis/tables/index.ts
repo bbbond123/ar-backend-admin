@@ -1,9 +1,10 @@
 import type * as Tables from "./type"
 import { request } from "@/http/axios"
+import { IBaseResponse, IResponse } from "../type"
 
 /** 增 */
 export function createTableDataApi(data: Tables.CreateOrUpdateTableRequestData) {
-  return request({
+  return request<IBaseResponse<Tables.TableData>>({
     url: "tables",
     method: "post",
     data
@@ -12,7 +13,7 @@ export function createTableDataApi(data: Tables.CreateOrUpdateTableRequestData) 
 
 /** 删 */
 export function deleteTableDataApi(id: number) {
-  return request({
+  return request<IBaseResponse<boolean>>({
     url: `tables/${id}`,
     method: "delete"
   })
@@ -20,7 +21,7 @@ export function deleteTableDataApi(id: number) {
 
 /** 改 */
 export function updateTableDataApi(data: Tables.CreateOrUpdateTableRequestData) {
-  return request({
+  return request<IBaseResponse<Tables.TableData>>({
     url: "tables",
     method: "put",
     data
@@ -29,7 +30,7 @@ export function updateTableDataApi(data: Tables.CreateOrUpdateTableRequestData) 
 
 /** 查 */
 export function getTableDataApi(params: Tables.TableRequestData) {
-  return request<Tables.TableResponseData>({
+  return request<IResponse<Tables.TableData>>({
     url: "tables",
     method: "get",
     params

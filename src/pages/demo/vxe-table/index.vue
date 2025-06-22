@@ -170,7 +170,27 @@ const xGridOpt: VxeGridProps = reactive({
             currentPage: page.currentPage
           }
           // 调用接口
-          getTableDataApi(params).then(callback).catch(callback)
+          getTableDataApi(params).then((res) => {
+            if (res.code === 200) {
+              callback({
+                code: 200,
+                message: "success",
+                data: {
+                  list: res.data,
+                  total: res.total
+                }
+              })
+            } else {
+              callback({
+                code: res.code,
+                message: res.message,
+                data: {
+                  list: [],
+                  total: 0
+                }
+              })
+            }
+          }).catch(callback)
         })
       }
     }
@@ -359,10 +379,14 @@ const crudStore = reactive({
       dangerouslyUseHTMLString: true
     }
     ElMessageBox.confirm(tip, "提示", config).then(() => {
-      deleteTableDataApi(row.id).then(() => {
-        ElMessage.success("删除成功")
-        crudStore.afterDelete()
-        crudStore.commitQuery()
+      deleteTableDataApi(row.id).then((res) => {
+        if (res.success) {
+          ElMessage.success("删除成功")
+          crudStore.afterDelete()
+          crudStore.commitQuery()
+        } else {
+          ElMessage.error(res.errMessage || "删除失败")
+        }
       })
     })
   },

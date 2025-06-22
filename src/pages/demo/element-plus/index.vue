@@ -35,10 +35,14 @@ function handleCreateOrUpdate() {
     }
     loading.value = true
     const api = formData.value.id === undefined ? createTableDataApi : updateTableDataApi
-    api(formData.value).then(() => {
-      ElMessage.success("操作成功")
-      dialogVisible.value = false
-      getTableData()
+    api(formData.value).then((res) => {
+      if (res.success) {
+        ElMessage.success("操作成功")
+        dialogVisible.value = false
+        getTableData()
+      } else {
+        ElMessage.error(res.errMessage || "操作失败")
+      }
     }).finally(() => {
       loading.value = false
     })
@@ -57,9 +61,13 @@ function handleDelete(row: TableData) {
     cancelButtonText: "取消",
     type: "warning"
   }).then(() => {
-    deleteTableDataApi(row.id).then(() => {
-      ElMessage.success("删除成功")
-      getTableData()
+    deleteTableDataApi(row.id).then((res) => {
+      if (res.success) {
+        ElMessage.success("删除成功")
+        getTableData()
+      } else {
+        ElMessage.error(res.errMessage || "删除失败")
+      }
     })
   })
 }
@@ -86,9 +94,14 @@ function getTableData() {
     size: paginationData.pageSize,
     username: searchData.username,
     phone: searchData.phone
-  }).then(({ data }) => {
-    paginationData.total = data.total
-    tableData.value = data.list
+  }).then((res) => {
+    if (res.code === 200) {
+      paginationData.total = res.total
+      tableData.value = res.data
+    } else {
+      tableData.value = []
+      ElMessage.error(res.message || "获取数据失败")
+    }
   }).catch(() => {
     tableData.value = []
   }).finally(() => {

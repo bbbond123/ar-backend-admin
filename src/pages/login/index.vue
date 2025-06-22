@@ -28,8 +28,8 @@ const codeUrl = ref("")
 
 /** 登录表单数据 */
 const loginFormData: LoginRequestData = reactive({
-  email: "arkia123@163.com",
-  password: "123456",
+  email: "admin@ar-backend.com",
+  password: "admin123",
   // code: ""
 })
 
@@ -55,9 +55,13 @@ function handleLogin() {
       return
     }
     loading.value = true
-    loginApi(loginFormData).then(({ data }) => {
-      userStore.setToken(data.access_token)
-      router.push("/")
+    loginApi(loginFormData).then((res) => {
+      if (res.success) {
+        userStore.setToken(res.data.access_token)
+        router.push("/")
+      } else {
+        ElMessage.error(res.errMessage || "登录失败")
+      }
     }).catch(() => {
       // createCode()
       // loginFormData.password = ""
@@ -75,7 +79,11 @@ function createCode() {
   codeUrl.value = ""
   // 获取验证码图片
   getCaptchaApi().then((res) => {
-    codeUrl.value = res.data
+    if (res.success) {
+      codeUrl.value = res.data
+    } else {
+      ElMessage.error(res.errMessage || "获取验证码失败")
+    }
   })
 }
 
