@@ -1,25 +1,20 @@
 /** 文章基础信息 */
 export interface Article {
-  id: string
+  articleId: number
   title: string
-  content: string
-  summary?: string
-  author: string
+  bodyText: string
   category?: string
-  tags?: string[]
-  cover_image?: string
-  images?: string[]
-  status: 'draft' | 'published' | 'archived'
-  view_count: number
-  like_count: number
-  comment_count: number
-  location?: {
-    latitude: number
-    longitude: number
-    address?: string
-  }
-  created_at: string
-  updated_at: string
+  address?: string
+  locationName?: string
+  latitude?: number
+  longitude?: number
+  imageUrl?: string
+  imageFileId?: number
+  articleImage?: number[]
+  likeCount: number
+  commentCount: number
+  createdAt: string
+  updatedAt: string
 }
 
 /** 文章评论 */
@@ -38,47 +33,65 @@ export interface ArticleComment {
 /** 创建文章请求 */
 export interface CreateArticleRequest {
   title: string
-  content: string
-  summary?: string
+  bodyText?: string
   category?: string
-  tags?: string[]
-  cover_image?: string
-  status: 'draft' | 'published'
-  location?: {
-    latitude: number
-    longitude: number
-    address?: string
-  }
+  address?: string
+  locationName?: string
+  latitude?: number
+  longitude?: number
+  imageFileId?: number
+  articleImage?: number[]
+  likeCount?: number
+  commentCount?: number
 }
 
 /** 更新文章请求 */
 export interface UpdateArticleRequest {
+  articleId: number
   title?: string
-  content?: string
-  summary?: string
+  bodyText?: string
   category?: string
-  tags?: string[]
-  cover_image?: string
-  status?: 'draft' | 'published' | 'archived'
-  location?: {
-    latitude: number
-    longitude: number
-    address?: string
-  }
+  address?: string
+  locationName?: string
+  latitude?: number
+  longitude?: number
+  imageFileId?: number
+  articleImage?: number[]
+  likeCount?: number
+  commentCount?: number
 }
 
 /** 文章列表请求 */
 export interface ArticleListRequest {
-  page?: number
-  page_size?: number
+  page: number
+  pageSize: number
+  title?: string
+  bodyText?: string
   category?: string
-  author?: string
-  status?: 'draft' | 'published' | 'archived'
+  address?: string
+  locationName?: string
+  latitude?: number
+  longitude?: number
+  likeCount?: number
+  commentCount?: number
+}
+
+/** 文章统计请求 */
+export interface ArticleStatsRequest {
+  page: number
+  pageSize: number
+  category?: string
   keyword?: string
-  start_date?: string
-  end_date?: string
-  sort_by?: 'created_at' | 'updated_at' | 'view_count' | 'like_count'
-  sort_order?: 'asc' | 'desc'
+}
+
+/** 文章统计响应 */
+export interface ArticleStatsResponse {
+  currentPage: number
+  pageSize: number
+  total: number
+  hasPrev: boolean
+  hasNext: boolean
+  articles: Article[]
 }
 
 /** 附近文章请求 */
@@ -98,6 +111,7 @@ export interface ArticleComments {
   comments: ArticleComment[]
   total: number
 }
+
 export interface LikeAricle {
   liked: boolean
   like_count: number

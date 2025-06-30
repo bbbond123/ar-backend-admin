@@ -111,7 +111,7 @@ import type { ArticleComment } from "@@/apis/articles/type"
 
 interface Props {
   modelValue: boolean
-  articleId: string
+  articleId: number
   articleTitle: string
 }
 

@@ -89,13 +89,13 @@
               accept="image/*"
             >
               <img
-                v-if="formData.cover_image"
-                :src="formData.cover_image"
+                v-if="formData.imageUrl"
+                :src="formData.imageUrl"
                 class="cover"
               />
               <el-icon v-else class="cover-uploader-icon"><Plus /></el-icon>
             </el-upload>
-            <div class="cover-actions" v-if="formData.cover_image">
+            <div class="cover-actions" v-if="formData.imageUrl">
               <el-button size="small" type="danger" @click="removeCover"
                 >删除封面</el-button
               >
@@ -103,9 +103,9 @@
           </div>
         </el-form-item>
 
-        <el-form-item label="文章内容" prop="content">
+        <el-form-item label="文章内容" prop="bodyText">
           <el-input
-            v-model="formData.content"
+            v-model="formData.bodyText"
             type="textarea"
             :rows="15"
             placeholder="请输入文章内容"
@@ -118,7 +118,7 @@
           <div class="location-section">
             <el-checkbox
               v-model="enableLocation"
-              @change="(val: CheckboxValueType) => handleLocationToggle(val)"
+              @change="handleLocationToggle"
             >
               启用位置信息
             </el-checkbox>
@@ -126,21 +126,21 @@
               <el-row :gutter="20" style="margin-top: 12px">
                 <el-col :span="8">
                   <el-input
-                    v-model="formData.location.latitude"
+                    v-model="formData.latitude"
                     placeholder="纬度"
                     type="number"
                   />
                 </el-col>
                 <el-col :span="8">
                   <el-input
-                    v-model="formData.location.longitude"
+                    v-model="formData.longitude"
                     placeholder="经度"
                     type="number"
                   />
                 </el-col>
                 <el-col :span="8">
                   <el-input
-                    v-model="formData.location.address"
+                    v-model="formData.address"
                     placeholder="地址描述（可选）"
                   />
                 </el-col>
@@ -187,7 +187,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, nextTick } from "vue";
+import { ref, reactive, watch, nextTick, computed } from "vue";
 import {
   ElMessage,
   type FormInstance,
@@ -198,19 +198,19 @@ import { Plus } from "@element-plus/icons-vue";
 import {
   createArticleApi,
   updateArticleApi,
-  getArticleApi,
   createArticleWithImageApi,
+  getArticleApi,
 } from "@@/apis/articles";
 import type {
+  Article,
   CreateArticleRequest,
   UpdateArticleRequest,
-  Article,
   CreateArticleWithImageRequest,
 } from "@@/apis/articles/type";
 
 interface Props {
   modelValue: boolean;
-  articleId?: string;
+  articleId: number;
 }
 
 interface Emits {
@@ -225,63 +225,55 @@ const dialogVisible = ref(false);
 const loading = ref(false);
 const saving = ref(false);
 const formRef = ref<FormInstance>();
-const isEdit = ref(false);
-const enableLocation = ref(false);
 
-// 常用标签列表
-const commonTags = ["技术", "生活", "旅行", "美食", "学习", "工作", "随笔"];
+// 是否为编辑模式
+const isEdit = computed(() => Boolean(props.articleId));
 
 // 表单数据
-const formData = reactive<
-  CreateArticleRequest & {
-    location: { latitude: number; longitude: number; address: string };
-  }
->({
+const formData = reactive<CreateArticleRequest & { imageUrl?: string }>({
   title: "",
-  content: "",
-  summary: "",
+  bodyText: "",
   category: "",
-  tags: [],
-  cover_image: "",
-  status: "draft",
-  location: {
-    latitude: 0,
-    longitude: 0,
-    address: "",
-  },
+  address: "",
+  locationName: "",
+  latitude: undefined,
+  longitude: undefined,
+  imageFileId: undefined,
+  imageUrl: "",
 });
 
-// 图片文件列表
+// 启用位置信息
+const enableLocation = ref(false);
+
+// 图片上传相关
 const imageFileList = ref<any[]>([]);
-const uploadedImages = ref<File[]>([]);
+const uploadImages = ref<File[]>([]);
+
+// 常用标签
+const commonTags = ref([
+  "旅游",
+  "美食",
+  "文化",
+  "历史",
+  "自然",
+  "建筑",
+  "人文",
+  "摄影",
+]);
 
 // 表单验证规则
-const rules = reactive({
-  title: [
-    { required: true, message: "请输入文章标题", trigger: "blur" },
-    {
-      min: 1,
-      max: 100,
-      message: "标题长度在 1 到 100 个字符",
-      trigger: "blur",
-    },
-  ],
-  content: [
-    { required: true, message: "请输入文章内容", trigger: "blur" },
-    { min: 10, message: "内容至少 10 个字符", trigger: "blur" },
-  ],
-  status: [{ required: true, message: "请选择文章状态", trigger: "change" }],
-});
+const rules = {
+  title: [{ required: true, message: "请输入文章标题", trigger: "blur" }],
+};
 
 // 监听 modelValue 变化
 watch(
   () => props.modelValue,
-  (val) => {
+  async (val) => {
     dialogVisible.value = val;
     if (val) {
-      isEdit.value = !!props.articleId;
-      if (props.articleId) {
-        getArticleDetail();
+      if (isEdit.value) {
+        await getArticleDetail();
       } else {
         resetForm();
       }
@@ -303,7 +295,21 @@ const getArticleDetail = async () => {
   try {
     const res = await getArticleApi(props.articleId);
     if (res.success) {
-      fillFormData(res.data);
+      const article = res.data;
+      Object.assign(formData, {
+        title: article.title,
+        bodyText: article.bodyText,
+        category: article.category,
+        address: article.address,
+        locationName: article.locationName,
+        latitude: article.latitude,
+        longitude: article.longitude,
+        imageFileId: article.imageFileId,
+        imageUrl: article.imageUrl || "",
+      });
+
+      // 设置位置信息状态
+      enableLocation.value = !!(article.latitude && article.longitude);
     } else {
       ElMessage.error(res.errMessage || "获取文章详情失败");
     }
@@ -315,53 +321,38 @@ const getArticleDetail = async () => {
   }
 };
 
-// 填充表单数据
-const fillFormData = (article: Article) => {
-  Object.assign(formData, {
-    title: article.title,
-    content: article.content,
-    summary: article.summary || "",
-    category: article.category || "",
-    tags: article.tags || [],
-    cover_image: article.cover_image || "",
-    status: article.status,
-    location: article.location || { latitude: 0, longitude: 0, address: "" },
-  });
-
-  enableLocation.value = !!(
-    article.location?.latitude && article.location?.longitude
-  );
-};
-
 // 重置表单
 const resetForm = () => {
   Object.assign(formData, {
     title: "",
-    content: "",
-    summary: "",
+    bodyText: "",
     category: "",
-    tags: [],
-    cover_image: "",
-    status: "draft",
-    location: { latitude: 0, longitude: 0, address: "" },
+    address: "",
+    locationName: "",
+    latitude: undefined,
+    longitude: undefined,
+    imageFileId: undefined,
+    imageUrl: "",
   });
   enableLocation.value = false;
   imageFileList.value = [];
-  uploadedImages.value = [];
-
+  uploadImages.value = [];
   nextTick(() => {
     formRef.value?.clearValidate();
   });
 };
 
-// 处理位置信息切换
-const handleLocationToggle = (enabled: CheckboxValueType) => {
-  if (!enabled) {
-    formData.location = { latitude: 0, longitude: 0, address: "" };
+// 位置信息切换
+const handleLocationToggle = (val: CheckboxValueType) => {
+  if (!val) {
+    formData.latitude = undefined;
+    formData.longitude = undefined;
+    formData.address = "";
+    formData.locationName = "";
   }
 };
 
-// 处理封面图上传
+// 封面图上传处理
 const handleCoverUpload: UploadProps["beforeUpload"] = (file) => {
   const isImage = file.type.startsWith("image/");
   const isLt2M = file.size / 1024 / 1024 < 2;
@@ -375,10 +366,10 @@ const handleCoverUpload: UploadProps["beforeUpload"] = (file) => {
     return false;
   }
 
-  // 创建预览URL
+  // 这里可以上传到服务器并获取URL，暂时使用本地预览
   const reader = new FileReader();
   reader.onload = (e) => {
-    formData.cover_image = e.target?.result as string;
+    formData.imageUrl = e.target?.result as string;
   };
   reader.readAsDataURL(file);
 
@@ -387,32 +378,32 @@ const handleCoverUpload: UploadProps["beforeUpload"] = (file) => {
 
 // 删除封面
 const removeCover = () => {
-  formData.cover_image = "";
+  formData.imageUrl = "";
 };
 
-// 处理图片上传
+// 图片上传处理
 const handleImageUpload: UploadProps["beforeUpload"] = (file) => {
   const isImage = file.type.startsWith("image/");
-  const isLt5M = file.size / 1024 / 1024 < 5;
+  const isLt2M = file.size / 1024 / 1024 < 2;
 
   if (!isImage) {
     ElMessage.error("只能上传图片文件!");
     return false;
   }
-  if (!isLt5M) {
-    ElMessage.error("图片大小不能超过 5MB!");
+  if (!isLt2M) {
+    ElMessage.error("图片大小不能超过 2MB!");
     return false;
   }
 
-  uploadedImages.value.push(file);
+  uploadImages.value.push(file);
   return false; // 阻止自动上传
 };
 
 // 删除图片
 const handleImageRemove = (file: any) => {
-  const index = imageFileList.value.indexOf(file);
+  const index = uploadImages.value.findIndex((img) => img.name === file.name);
   if (index > -1) {
-    uploadedImages.value.splice(index, 1);
+    uploadImages.value.splice(index, 1);
   }
 };
 
@@ -424,43 +415,27 @@ const handleSave = async () => {
     await formRef.value.validate();
     saving.value = true;
 
-    const requestData = {
-      title: formData.title,
-      content: formData.content,
-      summary: formData.summary || undefined,
-      category: formData.category || undefined,
-      tags:
-        formData.tags && formData.tags.length > 0 ? formData.tags : undefined,
-      cover_image: formData.cover_image || undefined,
-      status: formData.status,
-      location:
-        enableLocation.value &&
-        formData.location.latitude &&
-        formData.location.longitude
-          ? formData.location
-          : undefined,
-    };
-
-    if (isEdit.value && props.articleId) {
-      const res = await updateArticleApi(
-        props.articleId,
-        requestData as UpdateArticleRequest
-      );
+    if (isEdit.value) {
+      const updateData: UpdateArticleRequest = {
+        articleId: props.articleId,
+        ...formData,
+      };
+      const res = await updateArticleApi(updateData);
       if (res.success) {
-        ElMessage.success("文章更新成功");
+        ElMessage.success("更新成功");
         emit("refresh");
         handleClose();
       } else {
-        ElMessage.error(res.errMessage || "文章更新失败");
+        ElMessage.error(res.errMessage || "更新失败");
       }
     } else {
-      const res = await createArticleApi(requestData as CreateArticleRequest);
+      const res = await createArticleApi(formData);
       if (res.success) {
-        ElMessage.success("文章创建成功");
+        ElMessage.success("创建成功");
         emit("refresh");
         handleClose();
       } else {
-        ElMessage.error(res.errMessage || "文章创建失败");
+        ElMessage.error(res.errMessage || "创建失败");
       }
     }
   } catch (error) {
@@ -473,38 +448,24 @@ const handleSave = async () => {
 
 // 保存文章（支持图片上传）
 const handleSaveWithImage = async () => {
-  if (!formRef.value || isEdit.value) return;
+  if (!formRef.value) return;
 
   try {
     await formRef.value.validate();
     saving.value = true;
 
-    const requestData: CreateArticleWithImageRequest = {
-      title: formData.title,
-      content: formData.content,
-      summary: formData.summary || undefined,
-      category: formData.category || undefined,
-      tags:
-        formData.tags && formData.tags.length > 0 ? formData.tags : undefined,
-      cover_image: formData.cover_image || undefined,
-      status: formData.status,
-      location:
-        enableLocation.value &&
-        formData.location.latitude &&
-        formData.location.longitude
-          ? formData.location
-          : undefined,
-      images:
-        uploadedImages.value.length > 0 ? uploadedImages.value : undefined,
+    const createData: CreateArticleWithImageRequest = {
+      ...formData,
+      images: uploadImages.value,
     };
 
-    const res = await createArticleWithImageApi(requestData);
+    const res = await createArticleWithImageApi(createData);
     if (res.success) {
-      ElMessage.success("文章创建成功（已上传图片）");
+      ElMessage.success("创建成功");
       emit("refresh");
       handleClose();
     } else {
-      ElMessage.error(res.errMessage || "文章创建失败");
+      ElMessage.error(res.errMessage || "创建失败");
     }
   } catch (error) {
     console.error("保存失败:", error);

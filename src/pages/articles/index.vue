@@ -3,10 +3,10 @@
     <!-- 搜索栏 -->
     <el-card v-loading="loading" shadow="never" class="search-wrapper">
       <el-form :inline="true" :model="searchData">
-        <el-form-item prop="keyword" label="关键词">
+        <el-form-item prop="title" label="标题">
           <el-input
-            v-model="searchData.keyword"
-            placeholder="请输入标题或内容关键词"
+            v-model="searchData.title"
+            placeholder="请输入文章标题"
             clearable
             @keyup.enter="handleSearch"
           />
@@ -18,23 +18,19 @@
             clearable
           />
         </el-form-item>
-        <el-form-item prop="author" label="作者">
+        <el-form-item prop="locationName" label="地点">
           <el-input
-            v-model="searchData.author"
-            placeholder="请输入作者"
+            v-model="searchData.locationName"
+            placeholder="请输入地点名称"
             clearable
           />
         </el-form-item>
-        <el-form-item prop="status" label="状态">
-          <el-select
-            v-model="searchData.status"
-            placeholder="请选择状态"
+        <el-form-item prop="bodyText" label="内容">
+          <el-input
+            v-model="searchData.bodyText"
+            placeholder="请输入内容关键词"
             clearable
-          >
-            <el-option label="草稿" value="draft" />
-            <el-option label="已发布" value="published" />
-            <el-option label="已归档" value="archived" />
-          </el-select>
+          />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch"
@@ -77,10 +73,7 @@
     <!-- 表格 -->
     <el-card v-loading="loading" shadow="never">
       <div class="table-wrapper">
-        <el-table
-          :data="tableData"
-          @selection-change="handleSelectionChange"
-        >
+        <el-table :data="tableData" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center" />
           <el-table-column
             prop="title"
@@ -95,55 +88,54 @@
             </template>
           </el-table-column>
           <el-table-column
-            prop="author"
-            label="作者"
-            align="center"
-            width="120"
-          />
-          <el-table-column
             prop="category"
             label="分类"
             align="center"
             width="120"
           />
           <el-table-column
-            prop="status"
-            label="状态"
+            prop="locationName"
+            label="地点"
             align="center"
-            width="100"
-          >
-            <template #default="scope">
-              <el-tag :type="getStatusTagType(scope.row.status)" effect="plain">
-                {{ getStatusText(scope.row.status) }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="view_count"
-            label="浏览量"
-            align="center"
-            width="100"
+            width="150"
           />
           <el-table-column
-            prop="like_count"
+            prop="likeCount"
             label="点赞数"
             align="center"
             width="100"
           />
           <el-table-column
-            prop="comment_count"
+            prop="commentCount"
             label="评论数"
             align="center"
             width="100"
           />
           <el-table-column
-            prop="created_at"
+            prop="imageUrl"
+            label="封面"
+            align="center"
+            width="100"
+          >
+            <template #default="scope">
+              <el-image
+                v-if="scope.row.imageUrl"
+                :src="scope.row.imageUrl"
+                fit="cover"
+                style="width: 60px; height: 40px; border-radius: 4px"
+                :preview-src-list="[scope.row.imageUrl]"
+              />
+              <span v-else class="text-gray-400">无图片</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="createdAt"
             label="创建时间"
             align="center"
             width="180"
           >
             <template #default="scope">
-              {{ formatDateTime(scope.row.created_at) }}
+              {{ formatDateTime(scope.row.createdAt) }}
             </template>
           </el-table-column>
           <el-table-column
@@ -257,13 +249,11 @@ const { paginationData, handleCurrentChange, handleSizeChange } =
   usePagination();
 
 // 搜索数据
-const searchData = reactive<ArticleListRequest>({
-  keyword: "",
+const searchData = reactive<Partial<ArticleListRequest>>({
+  title: "",
   category: "",
-  author: "",
-  status: undefined,
-  sort_by: "created_at",
-  sort_order: "desc",
+  locationName: "",
+  bodyText: "",
 });
 
 // 表格数据
@@ -274,7 +264,7 @@ const selectedArticles = ref<Article[]>([]);
 const detailVisible = ref(false);
 const editVisible = ref(false);
 const commentsVisible = ref(false);
-const currentArticleId = ref("");
+const currentArticleId = ref<number>(0);
 const currentArticleTitle = ref("");
 
 // 获取表格数据
@@ -283,9 +273,22 @@ const getTableData = async () => {
   try {
     const params: ArticleListRequest = {
       page: paginationData.currentPage,
-      page_size: paginationData.page_size,
+      pageSize: paginationData.page_size,
       ...searchData,
     };
+
+    if (params.title === "") {
+      delete params.title;
+    }
+    if (params.category === "") {
+      delete params.category;
+    }
+    if (params.locationName === "") {
+      delete params.locationName;
+    }
+    if (params.bodyText === "") {
+      delete params.bodyText;
+    }
 
     const res = await getArticleListApi(params);
 
@@ -313,12 +316,10 @@ const handleSearch = () => {
 // 重置搜索
 const resetSearch = () => {
   Object.assign(searchData, {
-    keyword: "",
+    title: "",
     category: "",
-    author: "",
-    status: undefined,
-    sort_by: "created_at",
-    sort_order: "desc",
+    locationName: "",
+    bodyText: "",
   });
   paginationData.currentPage = 1;
   getTableData();
@@ -331,25 +332,25 @@ const handleSelectionChange = (selection: Article[]) => {
 
 // 新增文章
 const handleCreate = () => {
-  currentArticleId.value = "";
+  currentArticleId.value = 0;
   editVisible.value = true;
 };
 
 // 查看文章
 const handleView = (row: Article) => {
-  currentArticleId.value = row.id;
+  currentArticleId.value = row.articleId;
   detailVisible.value = true;
 };
 
 // 编辑文章
 const handleEdit = (row: Article) => {
-  currentArticleId.value = row.id;
+  currentArticleId.value = row.articleId;
   editVisible.value = true;
 };
 
 // 查看评论
 const handleComments = (row: Article) => {
-  currentArticleId.value = row.id;
+  currentArticleId.value = row.articleId;
   currentArticleTitle.value = row.title;
   commentsVisible.value = true;
 };
@@ -362,7 +363,7 @@ const handleDelete = (row: Article) => {
     type: "warning",
   }).then(async () => {
     try {
-      await deleteArticleApi(row.id);
+      await deleteArticleApi(row.articleId);
       ElMessage.success("删除成功");
       getTableData();
     } catch (error) {
@@ -382,7 +383,7 @@ const handleBatchDelete = () => {
   }).then(async () => {
     try {
       const promises = selectedArticles.value.map((item) =>
-        deleteArticleApi(item.id)
+        deleteArticleApi(item.articleId)
       );
       await Promise.all(promises);
       ElMessage.success("批量删除成功");
@@ -392,34 +393,6 @@ const handleBatchDelete = () => {
       ElMessage.error("批量删除失败");
     }
   });
-};
-
-// 状态标签类型
-const getStatusTagType = (status: string): "success" | "warning" | "info" => {
-  switch (status) {
-    case "published":
-      return "success";
-    case "draft":
-      return "warning";
-    case "archived":
-      return "info";
-    default:
-      return "info";
-  }
-};
-
-// 状态文本
-const getStatusText = (status: string) => {
-  switch (status) {
-    case "published":
-      return "已发布";
-    case "draft":
-      return "草稿";
-    case "archived":
-      return "已归档";
-    default:
-      return status;
-  }
 };
 
 // 格式化日期时间

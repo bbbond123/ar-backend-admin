@@ -12,103 +12,56 @@
         <div class="article-header">
           <h1 class="article-title">{{ articleData.title }}</h1>
           <div class="article-meta">
-            <el-tag :type="getStatusTagType(articleData.status)" size="small">
-              {{ getStatusText(articleData.status) }}
-            </el-tag>
-            <span class="meta-item">作者：{{ articleData.author }}</span>
             <span class="meta-item" v-if="articleData.category"
               >分类：{{ articleData.category }}</span
             >
             <span class="meta-item"
-              >创建时间：{{ formatDateTime(articleData.created_at) }}</span
+              >创建时间：{{ formatDateTime(articleData.createdAt) }}</span
             >
             <span class="meta-item"
-              >更新时间：{{ formatDateTime(articleData.updated_at) }}</span
+              >更新时间：{{ formatDateTime(articleData.updatedAt) }}</span
             >
           </div>
           <div class="article-stats">
-            <el-tag type="info" size="small"
-              >浏览：{{ articleData.view_count }}</el-tag
-            >
             <el-tag type="success" size="small"
-              >点赞：{{ articleData.like_count }}</el-tag
+              >点赞：{{ articleData.likeCount }}</el-tag
             >
             <el-tag type="warning" size="small"
-              >评论：{{ articleData.comment_count }}</el-tag
+              >评论：{{ articleData.commentCount }}</el-tag
             >
           </div>
         </div>
 
         <!-- 文章封面图 -->
-        <div v-if="articleData.cover_image" class="article-cover">
+        <div v-if="articleData.imageUrl" class="article-cover">
           <el-image
-            :src="articleData.cover_image"
+            :src="articleData.imageUrl"
             fit="cover"
             class="cover-image"
-            :preview-src-list="[articleData.cover_image]"
+            :preview-src-list="[articleData.imageUrl]"
           />
-        </div>
-
-        <!-- 文章摘要 -->
-        <div v-if="articleData.summary" class="article-summary">
-          <h3>摘要</h3>
-          <p>{{ articleData.summary }}</p>
-        </div>
-
-        <!-- 文章标签 -->
-        <div
-          v-if="articleData.tags && articleData.tags.length"
-          class="article-tags"
-        >
-          <h3>标签</h3>
-          <el-tag
-            v-for="tag in articleData.tags"
-            :key="tag"
-            size="small"
-            type="primary"
-            effect="plain"
-            style="margin-right: 8px"
-          >
-            {{ tag }}
-          </el-tag>
         </div>
 
         <!-- 文章内容 -->
         <div class="article-content">
           <h3>内容</h3>
-          <div class="content-body" v-html="articleData.content"></div>
-        </div>
-
-        <!-- 文章图片 -->
-        <div
-          v-if="articleData.images && articleData.images.length"
-          class="article-images"
-        >
-          <h3>相关图片</h3>
-          <div class="image-gallery">
-            <el-image
-              v-for="(image, index) in articleData.images"
-              :key="index"
-              :src="image"
-              fit="cover"
-              class="gallery-image"
-              :preview-src-list="articleData.images"
-              :initial-index="index"
-            />
-          </div>
+          <div class="content-body" v-html="articleData.bodyText"></div>
         </div>
 
         <!-- 位置信息 -->
-        <div v-if="articleData.location" class="article-location">
+        <div v-if="articleData.latitude && articleData.longitude" class="article-location">
           <h3>位置信息</h3>
           <p>
             <el-icon><Location /></el-icon>
-            <span v-if="articleData.location.address">{{
-              articleData.location.address
+            <span v-if="articleData.address">{{
+              articleData.address
+            }}</span>
+            <span v-else-if="articleData.locationName">{{
+              articleData.locationName
             }}</span>
             <span v-else>
-              纬度：{{ articleData.location.latitude }}，经度：{{
-                articleData.location.longitude
+              纬度：{{ articleData.latitude }}，经度：{{
+                articleData.longitude
               }}
             </span>
           </p>
@@ -121,7 +74,7 @@
         <el-button @click="handleClose">关闭</el-button>
         <el-button type="primary" @click="handleEdit">编辑文章</el-button>
         <el-button type="success" @click="handleLike" :loading="liking">
-          点赞 ({{ articleData?.like_count || 0 }})
+          点赞 ({{ articleData?.likeCount || 0 }})
         </el-button>
       </span>
     </template>
@@ -137,13 +90,13 @@ import type { Article } from "@@/apis/articles/type";
 
 interface Props {
   modelValue: boolean;
-  articleId: string;
+  articleId: number;
 }
 
 interface Emits {
   (e: "update:modelValue", value: boolean): void;
   (e: "refresh"): void;
-  (e: "edit", articleId: string): void;
+  (e: "edit", articleId: number): void;
 }
 
 const props = defineProps<Props>();
@@ -212,7 +165,7 @@ const handleLike = async () => {
     const res = await likeArticleApi(props.articleId);
     if (res.success) {
       if (articleData.value) {
-        articleData.value.like_count = res.data.like_count;
+        articleData.value.likeCount = res.data.like_count;
       }
       ElMessage.success(res.data.liked ? "点赞成功" : "取消点赞");
       emit("refresh");

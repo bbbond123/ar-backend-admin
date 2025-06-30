@@ -12,10 +12,19 @@ export function getArticleListApi(data: Articles.ArticleListRequest): Promise<IR
   })
 }
 
-/** 获取文章详情 */
-export function getArticleApi(articleId: string): Promise<IBaseResponse<Article>> {
+/** 获取文章统计信息 */
+export function getArticleStatsApi(data: Articles.ArticleStatsRequest): Promise<IResponse<Articles.ArticleStatsResponse>> {
   return request({
-    url: `articles/${articleId}`,
+    url: "articles/stats",
+    method: "post",
+    data
+  })
+}
+
+/** 获取文章详情 */
+export function getArticleApi(articleId: number): Promise<IBaseResponse<Article>> {
+  return request({
+    url: `api/articles/${articleId}`,
     method: "get"
   })
 }
@@ -38,7 +47,7 @@ export function createArticleWithImageApi(data: Articles.CreateArticleWithImageR
     if (key === 'images') return
     const value = data[key as keyof Articles.CreateArticleWithImageRequest]
     if (value !== undefined && value !== null) {
-      if (typeof value === 'object') {
+      if (typeof value === 'object' && Array.isArray(value)) {
         formData.append(key, JSON.stringify(value))
       } else {
         formData.append(key, String(value))
@@ -64,16 +73,16 @@ export function createArticleWithImageApi(data: Articles.CreateArticleWithImageR
 }
 
 /** 更新文章 */
-export function updateArticleApi(articleId: string, data: Articles.UpdateArticleRequest): Promise<IBaseResponse<Article>> {
+export function updateArticleApi(data: Articles.UpdateArticleRequest): Promise<IBaseResponse<Article>> {
   return request({
     url: "articles",
     method: "put",
-    data: { ...data, id: articleId }
+    data
   })
 }
 
 /** 删除文章 */
-export function deleteArticleApi(articleId: string): Promise<IBaseResponse<boolean>> {
+export function deleteArticleApi(articleId: number): Promise<IBaseResponse<boolean>> {
   return request({
     url: `articles/${articleId}`,
     method: "delete"
@@ -81,7 +90,7 @@ export function deleteArticleApi(articleId: string): Promise<IBaseResponse<boole
 }
 
 /** 获取文章评论 */
-export function getArticleCommentsApi(articleId: string): Promise<IBaseResponse<ArticleComments>> {
+export function getArticleCommentsApi(articleId: number): Promise<IBaseResponse<ArticleComments>> {
   return request({
     url: `articles/${articleId}/comments`,
     method: "get"
@@ -89,7 +98,7 @@ export function getArticleCommentsApi(articleId: string): Promise<IBaseResponse<
 }
 
 /** 文章点赞 */
-export function likeArticleApi(articleId: string): Promise<IBaseResponse<LikeAricle>> {
+export function likeArticleApi(articleId: number): Promise<IBaseResponse<LikeAricle>> {
   return request({
     url: `articles/${articleId}/like`,
     method: "post"
@@ -97,7 +106,7 @@ export function likeArticleApi(articleId: string): Promise<IBaseResponse<LikeAri
 }
 
 /** 搜索附近文章 */
-export function getNearbyArticlesApi(data: Articles.NearbyArticlesRequest) {
+export function getNearbyArticlesApi(data: Articles.NearbyArticlesRequest): Promise<IResponse<Article>> {
   return request({
     url: "articles/nearby",
     method: "post",
