@@ -24,7 +24,7 @@ export function getArticleStatsApi(data: Articles.ArticleStatsRequest): Promise<
 /** 获取文章详情 */
 export function getArticleApi(articleId: number): Promise<IBaseResponse<Article>> {
   return request({
-    url: `api/articles/${articleId}`,
+    url: `articles/${articleId}`,
     method: "get"
   })
 }
