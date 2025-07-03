@@ -1,3 +1,136 @@
+<script setup lang="ts">
+import type { Article } from "@@/apis/articles/type"
+import { getArticleApi, likeArticleApi } from "@@/apis/articles"
+import { Location } from "@element-plus/icons-vue"
+import { ElMessage } from "element-plus"
+import { ref, watch } from "vue"
+
+interface Props {
+  modelValue: boolean
+  articleId: number
+}
+
+interface Emits {
+  (e: "update:modelValue", value: boolean): void
+  (e: "refresh"): void
+  (e: "edit", articleId: number): void
+}
+
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
+
+const dialogVisible = ref(false)
+const loading = ref(false)
+const liking = ref(false)
+const articleData = ref<Article | null>(null)
+
+// 监听 modelValue 变化
+watch(
+  () => props.modelValue,
+  (val) => {
+    dialogVisible.value = val
+    if (val && props.articleId) {
+      getArticleDetail()
+    }
+  },
+  { immediate: true }
+)
+
+// 监听 dialogVisible 变化
+watch(dialogVisible, (val) => {
+  emit("update:modelValue", val)
+})
+
+// 获取文章详情
+async function getArticleDetail() {
+  if (!props.articleId) return
+
+  loading.value = true
+  try {
+    const res = await getArticleApi(props.articleId)
+    if (res.success) {
+      articleData.value = res.data
+    } else {
+      ElMessage.error(res.errMessage || "获取文章详情失败")
+    }
+  } catch (error) {
+    console.error("获取文章详情失败:", error)
+    ElMessage.error("获取文章详情失败")
+  } finally {
+    loading.value = false
+  }
+}
+
+// 关闭弹窗
+function handleClose() {
+  dialogVisible.value = false
+  articleData.value = null
+}
+
+// 编辑文章
+function handleEdit() {
+  emit("edit", props.articleId)
+  handleClose()
+}
+
+// 点赞文章
+async function handleLike() {
+  if (!props.articleId) return
+
+  liking.value = true
+  try {
+    const res = await likeArticleApi(props.articleId)
+    if (res.success) {
+      if (articleData.value) {
+        articleData.value.likeCount = res.data.like_count
+      }
+      ElMessage.success(res.data.liked ? "点赞成功" : "取消点赞")
+      emit("refresh")
+    } else {
+      ElMessage.error(res.errMessage || "点赞失败")
+    }
+  } catch (error) {
+    console.error("点赞失败:", error)
+    ElMessage.error("点赞失败")
+  } finally {
+    liking.value = false
+  }
+}
+
+// 状态标签类型
+function getStatusTagType(status: string): any {
+  switch (status) {
+    case "published":
+      return "success"
+    case "draft":
+      return "warning"
+    case "archived":
+      return "info"
+    default:
+      return ""
+  }
+}
+
+// 状态文本
+function getStatusText(status: string) {
+  switch (status) {
+    case "published":
+      return "已发布"
+    case "draft":
+      return "草稿"
+    case "archived":
+      return "已归档"
+    default:
+      return status
+  }
+}
+
+// 格式化日期时间
+function formatDateTime(dateTime: string) {
+  return new Date(dateTime).toLocaleString("zh-CN")
+}
+</script>
+
 <template>
   <el-dialog
     v-model="dialogVisible"
@@ -10,25 +143,21 @@
       <template v-if="articleData">
         <!-- 文章头部信息 -->
         <div class="article-header">
-          <h1 class="article-title">{{ articleData.title }}</h1>
+          <h1 class="article-title">
+            {{ articleData.title }}
+          </h1>
           <div class="article-meta">
-            <span class="meta-item" v-if="articleData.category"
-              >分类：{{ articleData.category }}</span
-            >
-            <span class="meta-item"
-              >创建时间：{{ formatDateTime(articleData.createdAt) }}</span
-            >
-            <span class="meta-item"
-              >更新时间：{{ formatDateTime(articleData.updatedAt) }}</span
-            >
+            <span class="meta-item" v-if="articleData.category">分类：{{ articleData.category }}</span>
+            <span class="meta-item">创建时间：{{ formatDateTime(articleData.createdAt) }}</span>
+            <span class="meta-item">更新时间：{{ formatDateTime(articleData.updatedAt) }}</span>
           </div>
           <div class="article-stats">
-            <el-tag type="success" size="small"
-              >点赞：{{ articleData.likeCount }}</el-tag
-            >
-            <el-tag type="warning" size="small"
-              >评论：{{ articleData.commentCount }}</el-tag
-            >
+            <el-tag type="success" size="small">
+              点赞：{{ articleData.likeCount }}
+            </el-tag>
+            <el-tag type="warning" size="small">
+              评论：{{ articleData.commentCount }}
+            </el-tag>
           </div>
         </div>
 
@@ -45,7 +174,7 @@
         <!-- 文章内容 -->
         <div class="article-content">
           <h3>内容</h3>
-          <div class="content-body" v-html="articleData.bodyText"></div>
+          <div class="content-body" v-html="articleData.bodyText" />
         </div>
 
         <!-- 位置信息 -->
@@ -80,139 +209,6 @@
     </template>
   </el-dialog>
 </template>
-
-<script setup lang="ts">
-import { ref, watch } from "vue";
-import { ElMessage } from "element-plus";
-import { Location } from "@element-plus/icons-vue";
-import { getArticleApi, likeArticleApi } from "@@/apis/articles";
-import type { Article } from "@@/apis/articles/type";
-
-interface Props {
-  modelValue: boolean;
-  articleId: number;
-}
-
-interface Emits {
-  (e: "update:modelValue", value: boolean): void;
-  (e: "refresh"): void;
-  (e: "edit", articleId: number): void;
-}
-
-const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
-
-const dialogVisible = ref(false);
-const loading = ref(false);
-const liking = ref(false);
-const articleData = ref<Article | null>(null);
-
-// 监听 modelValue 变化
-watch(
-  () => props.modelValue,
-  (val) => {
-    dialogVisible.value = val;
-    if (val && props.articleId) {
-      getArticleDetail();
-    }
-  },
-  { immediate: true }
-);
-
-// 监听 dialogVisible 变化
-watch(dialogVisible, (val) => {
-  emit("update:modelValue", val);
-});
-
-// 获取文章详情
-const getArticleDetail = async () => {
-  if (!props.articleId) return;
-
-  loading.value = true;
-  try {
-    const res = await getArticleApi(props.articleId);
-    if (res.success) {
-      articleData.value = res.data;
-    } else {
-      ElMessage.error(res.errMessage || "获取文章详情失败");
-    }
-  } catch (error) {
-    console.error("获取文章详情失败:", error);
-    ElMessage.error("获取文章详情失败");
-  } finally {
-    loading.value = false;
-  }
-};
-
-// 关闭弹窗
-const handleClose = () => {
-  dialogVisible.value = false;
-  articleData.value = null;
-};
-
-// 编辑文章
-const handleEdit = () => {
-  emit("edit", props.articleId);
-  handleClose();
-};
-
-// 点赞文章
-const handleLike = async () => {
-  if (!props.articleId) return;
-
-  liking.value = true;
-  try {
-    const res = await likeArticleApi(props.articleId);
-    if (res.success) {
-      if (articleData.value) {
-        articleData.value.likeCount = res.data.like_count;
-      }
-      ElMessage.success(res.data.liked ? "点赞成功" : "取消点赞");
-      emit("refresh");
-    } else {
-      ElMessage.error(res.errMessage || "点赞失败");
-    }
-  } catch (error) {
-    console.error("点赞失败:", error);
-    ElMessage.error("点赞失败");
-  } finally {
-    liking.value = false;
-  }
-};
-
-// 状态标签类型
-const getStatusTagType = (status: string): any => {
-  switch (status) {
-    case "published":
-      return "success";
-    case "draft":
-      return "warning";
-    case "archived":
-      return "info";
-    default:
-      return "";
-  }
-};
-
-// 状态文本
-const getStatusText = (status: string) => {
-  switch (status) {
-    case "published":
-      return "已发布";
-    case "draft":
-      return "草稿";
-    case "archived":
-      return "已归档";
-    default:
-      return status;
-  }
-};
-
-// 格式化日期时间
-const formatDateTime = (dateTime: string) => {
-  return new Date(dateTime).toLocaleString("zh-CN");
-};
-</script>
 
 <style lang="scss" scoped>
 .article-detail {

@@ -1,20 +1,20 @@
-import type { ApiResponse, PaginationResponse } from '../type'
+import type { ApiResponse, PaginationResponse } from "../type"
 import type {
-  VisitHistory,
   CreateVisitHistoryRequest,
   UpdateVisitHistoryRequest,
+  VisitHistory,
   VisitHistoryListRequest,
   VisitHistoryResult
-} from './type'
-import { request } from '@/http/axios'
+} from "./type"
+import { request } from "@/http/axios"
 
-const BASE_URL = '/api/v1/visit-history'
+const BASE_URL = "/api/v1/visit-history"
 
 /** 获取访问历史列表 */
 export function getVisitHistoryListApi(params: VisitHistoryListRequest) {
   return request<ApiResponse<PaginationResponse<VisitHistory>>>({
     url: `${BASE_URL}/list`,
-    method: 'get',
+    method: "get",
     params
   })
 }
@@ -23,7 +23,7 @@ export function getVisitHistoryListApi(params: VisitHistoryListRequest) {
 export function getVisitHistoryDetailApi(visionId: number) {
   return request<ApiResponse<VisitHistory>>({
     url: `${BASE_URL}/${visionId}`,
-    method: 'get'
+    method: "get"
   })
 }
 
@@ -31,7 +31,7 @@ export function getVisitHistoryDetailApi(visionId: number) {
 export function createVisitHistoryApi(data: CreateVisitHistoryRequest) {
   return request<ApiResponse<VisitHistory>>({
     url: BASE_URL,
-    method: 'post',
+    method: "post",
     data
   })
 }
@@ -40,7 +40,7 @@ export function createVisitHistoryApi(data: CreateVisitHistoryRequest) {
 export function updateVisitHistoryApi(data: UpdateVisitHistoryRequest) {
   return request<ApiResponse<VisitHistory>>({
     url: `${BASE_URL}/${data.vision_id}`,
-    method: 'put',
+    method: "put",
     data
   })
 }
@@ -49,23 +49,23 @@ export function updateVisitHistoryApi(data: UpdateVisitHistoryRequest) {
 export function deleteVisitHistoryApi(visionId: number) {
   return request<ApiResponse<void>>({
     url: `${BASE_URL}/${visionId}`,
-    method: 'delete'
+    method: "delete"
   })
 }
 
 /** 处理访问记录 */
 export function processVisitApi(imageFile: File, userId?: number) {
   const formData = new FormData()
-  formData.append('image', imageFile)
+  formData.append("image", imageFile)
   if (userId) {
-    formData.append('user_id', userId.toString())
+    formData.append("user_id", userId.toString())
   }
 
   return request<ApiResponse<VisitHistoryResult>>({
     url: `${BASE_URL}/process`,
-    method: 'post',
+    method: "post",
     headers: {
-      'Content-Type': 'multipart/form-data'
+      "Content-Type": "multipart/form-data"
     },
     data: formData
   })
@@ -75,7 +75,7 @@ export function processVisitApi(imageFile: File, userId?: number) {
 export function getUserVisitHistoryApi(userId: number) {
   return request<ApiResponse<VisitHistory[]>>({
     url: `${BASE_URL}/users/${userId}`,
-    method: 'get'
+    method: "get"
   })
 }
 
@@ -83,11 +83,11 @@ export function getUserVisitHistoryApi(userId: number) {
 export function getLocationVisitHistoryApi(latitude: number, longitude: number, radius: number = 1) {
   return request<ApiResponse<VisitHistory[]>>({
     url: `${BASE_URL}/location`,
-    method: 'get',
+    method: "get",
     params: {
       latitude,
       longitude,
       radius
     }
   })
-} 
+}

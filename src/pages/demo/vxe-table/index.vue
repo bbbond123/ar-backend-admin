@@ -1,44 +1,43 @@
 <script lang="ts" setup>
-import type { TableResponseData } from "@@/apis/tables/type";
-import type { ElMessageBoxOptions } from "element-plus";
+import type { TableData } from "@@/apis/tables/type"
+import type { ElMessageBoxOptions } from "element-plus"
 import type {
   VxeFormInstance,
   VxeFormProps,
   VxeGridInstance,
   VxeGridProps,
   VxeModalInstance,
-  VxeModalProps,
-} from "vxe-table";
-import { deleteTableDataApi, getTableDataApi } from "@@/apis/tables";
-import { TableData } from "@@/apis/tables/type";
-import { RoleColumnSlots } from "./tsx/RoleColumnSlots";
-import { StatusColumnSlots } from "./tsx/StatusColumnSlots";
-import { IResponse } from "@/common/apis/type";
+  VxeModalProps
+} from "vxe-table"
+import type { IResponse } from "@/common/apis/type"
+import { deleteTableDataApi, getTableDataApi } from "@@/apis/tables"
+import { RoleColumnSlots } from "./tsx/RoleColumnSlots"
+import { StatusColumnSlots } from "./tsx/StatusColumnSlots"
 
 defineOptions({
   // 命名当前组件
-  name: "VxeTable",
-});
+  name: "VxeTable"
+})
 
 // #region vxe-grid
 interface RowMeta {
-  id: number;
-  username: string;
-  roles: string;
-  phone: string;
-  email: string;
-  status: boolean;
-  createTime: string;
+  id: number
+  username: string
+  roles: string
+  phone: string
+  email: string
+  status: boolean
+  createTime: string
   /** vxe-table 自动添加上去的属性 */
-  _VXE_ID?: string;
+  _VXE_ID?: string
 }
-const xGridDom = ref<VxeGridInstance>();
+const xGridDom = ref<VxeGridInstance>()
 const xGridOpt: VxeGridProps = reactive({
   loading: true,
   autoResize: true,
   /** 分页配置项 */
   pagerConfig: {
-    align: "right",
+    align: "right"
   },
   /** 表单配置项 */
   formConfig: {
@@ -49,9 +48,9 @@ const xGridOpt: VxeGridProps = reactive({
           name: "$input",
           props: {
             placeholder: "用户名",
-            clearable: true,
-          },
-        },
+            clearable: true
+          }
+        }
       },
       {
         field: "phone",
@@ -59,9 +58,9 @@ const xGridOpt: VxeGridProps = reactive({
           name: "$input",
           props: {
             placeholder: "手机号",
-            clearable: true,
-          },
-        },
+            clearable: true
+          }
+        }
       },
       {
         itemRender: {
@@ -71,65 +70,65 @@ const xGridOpt: VxeGridProps = reactive({
               props: {
                 type: "submit",
                 content: "查询",
-                status: "primary",
-              },
+                status: "primary"
+              }
             },
             {
               props: {
                 type: "reset",
-                content: "重置",
-              },
-            },
-          ],
-        },
-      },
-    ],
+                content: "重置"
+              }
+            }
+          ]
+        }
+      }
+    ]
   },
   /** 工具栏配置 */
   toolbarConfig: {
     refresh: true,
     custom: true,
     slots: {
-      buttons: "toolbar-btns",
-    },
+      buttons: "toolbar-btns"
+    }
   },
   /** 自定义列配置项 */
   customConfig: {
     /** 是否允许列选中  */
-    checkMethod: ({ column }) => !["username"].includes(column.field),
+    checkMethod: ({ column }) => !["username"].includes(column.field)
   },
   /** 列配置 */
   columns: [
     {
       type: "checkbox",
-      width: "50px",
+      width: "50px"
     },
     {
       field: "username",
-      title: "用户名",
+      title: "用户名"
     },
     {
       field: "roles",
       title: "角色",
       /** 自定义列与 type: "html" 的列一起使用，会产生错误，所以采用 TSX 实现 */
-      slots: RoleColumnSlots,
+      slots: RoleColumnSlots
     },
     {
       field: "phone",
-      title: "手机号",
+      title: "手机号"
     },
     {
       field: "email",
-      title: "邮箱",
+      title: "邮箱"
     },
     {
       field: "status",
       title: "状态",
-      slots: StatusColumnSlots,
+      slots: StatusColumnSlots
     },
     {
       field: "createTime",
-      title: "创建时间",
+      title: "创建时间"
     },
     {
       title: "操作",
@@ -137,9 +136,9 @@ const xGridOpt: VxeGridProps = reactive({
       fixed: "right",
       showOverflow: false,
       slots: {
-        default: "row-operate",
-      },
-    },
+        default: "row-operate"
+      }
+    }
   ],
   /** 数据代理配置项（基于 Promise API） */
   proxyConfig: {
@@ -150,34 +149,34 @@ const xGridOpt: VxeGridProps = reactive({
     /** 是否自动加载，默认为 true */
     autoLoad: true,
     props: {
-      total: "total",
+      total: "total"
     },
     ajax: {
       query: ({ page, form }) => {
-        xGridOpt.loading = true;
-        crudStore.clearTable();
+        xGridOpt.loading = true
+        crudStore.clearTable()
         return new Promise((resolve) => {
-          let total = 0;
-          let result: RowMeta[] = [];
+          let total = 0
+          let result: RowMeta[] = []
           // 加载数据
           const callback = (res: IResponse<TableData>) => {
             if (res?.data) {
               // 总数
-              total = res.total;
+              total = res.total
               // 列表数据
-              result = res.data;
+              result = res.data
             }
-            xGridOpt.loading = false;
+            xGridOpt.loading = false
             // 返回值有格式要求，详情见 vxe-table 官方文档
-            resolve({ total, result });
-          };
+            resolve({ total, result })
+          }
           // 接口需要的参数
           const params = {
             username: form.username || "",
             phone: form.phone || "",
             size: page.pageSize,
-            currentPage: page.currentPage,
-          };
+            currentPage: page.currentPage
+          }
           // 调用接口
           getTableDataApi(params)
             .then((res) => {
@@ -188,8 +187,8 @@ const xGridOpt: VxeGridProps = reactive({
                   page: page.currentPage,
                   pageSize: page.pageSize,
                   code: res.code,
-                  success: res.success,
-                });
+                  success: res.success
+                })
               } else {
                 callback({
                   code: res.code,
@@ -197,34 +196,34 @@ const xGridOpt: VxeGridProps = reactive({
                   total: 0,
                   page: page.currentPage,
                   pageSize: page.pageSize,
-                  success: res.success,
-                });
+                  success: res.success
+                })
               }
             })
-            .catch(callback);
-        });
-      },
-    },
-  },
-});
+            .catch(callback)
+        })
+      }
+    }
+  }
+})
 // #endregion
 
 // #region vxe-modal
-const xModalDom = ref<VxeModalInstance>();
+const xModalDom = ref<VxeModalInstance>()
 const xModalOpt: VxeModalProps = reactive({
   title: "",
   showClose: true,
   escClosable: true,
   maskClosable: true,
   beforeHideMethod: () => {
-    xFormDom.value?.clearValidate();
-    return Promise.resolve();
-  },
-});
+    xFormDom.value?.clearValidate()
+    return Promise.resolve()
+  }
+})
 // #endregion
 
 // #region vxe-form
-const xFormDom = ref<VxeFormInstance>();
+const xFormDom = ref<VxeFormInstance>()
 const xFormOpt: VxeFormProps = reactive({
   span: 24,
   titleWidth: "100px",
@@ -234,7 +233,7 @@ const xFormOpt: VxeFormProps = reactive({
   /** 表单数据 */
   data: {
     username: "",
-    password: "",
+    password: ""
   },
   /** 项列表 */
   items: [
@@ -244,9 +243,9 @@ const xFormOpt: VxeFormProps = reactive({
       itemRender: {
         name: "$input",
         props: {
-          placeholder: "请输入",
-        },
-      },
+          placeholder: "请输入"
+        }
+      }
     },
     {
       field: "password",
@@ -254,9 +253,9 @@ const xFormOpt: VxeFormProps = reactive({
       itemRender: {
         name: "$input",
         props: {
-          placeholder: "请输入",
-        },
-      },
+          placeholder: "请输入"
+        }
+      }
     },
     {
       align: "right",
@@ -265,25 +264,25 @@ const xFormOpt: VxeFormProps = reactive({
         children: [
           {
             props: {
-              content: "取消",
+              content: "取消"
             },
             events: {
-              click: () => xModalDom.value?.close(),
-            },
+              click: () => xModalDom.value?.close()
+            }
           },
           {
             props: {
               type: "submit",
               content: "确定",
-              status: "primary",
+              status: "primary"
             },
             events: {
-              click: () => crudStore.onSubmitForm(),
-            },
-          },
-        ],
-      },
-    },
+              click: () => crudStore.onSubmitForm()
+            }
+          }
+        ]
+      }
+    }
   ],
   /** 校验规则 */
   rules: {
@@ -293,12 +292,12 @@ const xFormOpt: VxeFormProps = reactive({
         validator: ({ itemValue }) => {
           switch (true) {
             case !itemValue:
-              return new Error("请输入");
+              return new Error("请输入")
             case !itemValue.trim():
-              return new Error("空格无效");
+              return new Error("空格无效")
           }
-        },
-      },
+        }
+      }
     ],
     password: [
       {
@@ -306,15 +305,15 @@ const xFormOpt: VxeFormProps = reactive({
         validator: ({ itemValue }) => {
           switch (true) {
             case !itemValue:
-              return new Error("请输入");
+              return new Error("请输入")
             case !itemValue.trim():
-              return new Error("空格无效");
+              return new Error("空格无效")
           }
-        },
-      },
-    ],
-  },
-});
+        }
+      }
+    ]
+  }
+})
 // #endregion
 
 // #region 增删改查
@@ -328,58 +327,58 @@ const crudStore = reactive({
   /** 点击显示弹窗 */
   onShowModal: (row?: RowMeta) => {
     if (row) {
-      crudStore.isUpdate = true;
-      xModalOpt.title = "修改用户";
+      crudStore.isUpdate = true
+      xModalOpt.title = "修改用户"
       // 赋值
-      xFormOpt.data.username = row.username;
+      xFormOpt.data.username = row.username
     } else {
-      crudStore.isUpdate = false;
-      xModalOpt.title = "新增用户";
+      crudStore.isUpdate = false
+      xModalOpt.title = "新增用户"
     }
     // 禁用表单项
-    const props = xFormOpt.items?.[0]?.itemRender?.props;
-    props && (props.disabled = crudStore.isUpdate);
-    xModalDom.value?.open();
+    const props = xFormOpt.items?.[0]?.itemRender?.props
+    props && (props.disabled = crudStore.isUpdate)
+    xModalDom.value?.open()
     nextTick(() => {
-      !crudStore.isUpdate && xFormDom.value?.reset();
-      xFormDom.value?.clearValidate();
-    });
+      !crudStore.isUpdate && xFormDom.value?.reset()
+      xFormDom.value?.clearValidate()
+    })
   },
   /** 确定并保存 */
   onSubmitForm: () => {
-    if (xFormOpt.loading) return;
+    if (xFormOpt.loading) return
     xFormDom.value?.validate((errMap) => {
-      if (errMap) return;
-      xFormOpt.loading = true;
+      if (errMap) return
+      xFormOpt.loading = true
       const callback = () => {
-        xFormOpt.loading = false;
-        xModalDom.value?.close();
-        ElMessage.success("操作成功");
-        !crudStore.isUpdate && crudStore.afterInsert();
-        crudStore.commitQuery();
-      };
+        xFormOpt.loading = false
+        xModalDom.value?.close()
+        ElMessage.success("操作成功")
+        !crudStore.isUpdate && crudStore.afterInsert()
+        crudStore.commitQuery()
+      }
       if (crudStore.isUpdate) {
         // 模拟调用修改接口成功
-        setTimeout(() => callback(), 1000);
+        setTimeout(() => callback(), 1000)
       } else {
         // 模拟调用新增接口成功
-        setTimeout(() => callback(), 1000);
+        setTimeout(() => callback(), 1000)
       }
-    });
+    })
   },
   /** 新增后是否跳入最后一页 */
   afterInsert: () => {
-    const pager = xGridDom.value?.getProxyInfo()?.pager;
+    const pager = xGridDom.value?.getProxyInfo()?.pager
     if (pager) {
-      const currentTotal = pager.currentPage * pager.pageSize;
+      const currentTotal = pager.currentPage * pager.pageSize
       if (currentTotal === pager.total) {
-        ++pager.currentPage;
+        ++pager.currentPage
       }
     }
   },
   /** 删除 */
   onDelete: (row: RowMeta) => {
-    const tip = `确定 <strong style="color: var(--el-color-danger);"> 删除 </strong> 用户 <strong style="color: var(--el-color-primary);"> ${row.username} </strong> ？`;
+    const tip = `确定 <strong style="color: var(--el-color-danger);"> 删除 </strong> 用户 <strong style="color: var(--el-color-primary);"> ${row.username} </strong> ？`
     const config: ElMessageBoxOptions = {
       type: "warning",
       showClose: true,
@@ -387,31 +386,31 @@ const crudStore = reactive({
       closeOnPressEscape: true,
       cancelButtonText: "取消",
       confirmButtonText: "确定",
-      dangerouslyUseHTMLString: true,
-    };
+      dangerouslyUseHTMLString: true
+    }
     ElMessageBox.confirm(tip, "提示", config).then(() => {
       deleteTableDataApi(row.id).then((res) => {
         if (res.success) {
-          ElMessage.success("删除成功");
-          crudStore.afterDelete();
-          crudStore.commitQuery();
+          ElMessage.success("删除成功")
+          crudStore.afterDelete()
+          crudStore.commitQuery()
         } else {
-          ElMessage.error(res.errMessage || "删除失败");
+          ElMessage.error(res.errMessage || "删除失败")
         }
-      });
-    });
+      })
+    })
   },
   /** 删除后是否返回上一页 */
   afterDelete: () => {
-    const tableData: RowMeta[] = xGridDom.value!.getData();
-    const pager = xGridDom.value?.getProxyInfo()?.pager;
+    const tableData: RowMeta[] = xGridDom.value!.getData()
+    const pager = xGridDom.value?.getProxyInfo()?.pager
     if (pager && pager.currentPage > 1 && tableData.length === 1) {
-      --pager.currentPage;
+      --pager.currentPage
     }
   },
   /** 更多自定义方法 */
-  moreFn: () => {},
-});
+  moreFn: () => {}
+})
 // #endregion
 </script>
 

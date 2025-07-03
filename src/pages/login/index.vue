@@ -2,7 +2,7 @@
 import type { FormInstance, FormRules } from "element-plus"
 import type { LoginRequestData } from "./apis/type"
 import ThemeSwitch from "@@/components/ThemeSwitch/index.vue"
-import { Key, Loading, Lock, Picture, User } from "@element-plus/icons-vue"
+import { Lock, User } from "@element-plus/icons-vue"
 import { useSettingsStore } from "@/pinia/stores/settings"
 import { useUserStore } from "@/pinia/stores/user"
 import { getCaptchaApi, loginApi } from "./apis"
@@ -29,7 +29,7 @@ const codeUrl = ref("")
 /** 登录表单数据 */
 const loginFormData: LoginRequestData = reactive({
   email: "admin@ar-backend.com",
-  password: "admin123",
+  password: "admin123"
   // code: ""
 })
 
@@ -39,7 +39,7 @@ const loginFormRules: FormRules = {
     { required: true, message: "请输入用户名", trigger: "blur" }
   ],
   password: [
-    { required: true, message: "请输入密码", trigger: "blur" },
+    { required: true, message: "请输入密码", trigger: "blur" }
     // { min: 8, max: 16, message: "长度在 8 到 16 个字符", trigger: "blur" }
   ],
   code: [

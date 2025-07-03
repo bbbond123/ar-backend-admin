@@ -1,4 +1,4 @@
-import type { PaginationRequest } from '../type'
+import type { PaginationRequest } from "../type"
 
 /** 访问历史记录 */
 export interface VisitHistory {
@@ -82,4 +82,4 @@ export interface VisitHistoryResult {
     rating?: number
     description?: string
   }[]
-} 
+}

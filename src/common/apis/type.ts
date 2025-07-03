@@ -36,28 +36,28 @@ export interface ErrorResponse {
 
 // 具体错误类型（可选，用于更严格的类型检查）
 export interface Error400 extends ErrorResponse {
-  errCode: '400'
-  errMessage: '请求参数错误'
+  errCode: "400"
+  errMessage: "请求参数错误"
 }
 
 export interface Error401 extends ErrorResponse {
-  errCode: '401'
-  errMessage: '未授权或token无效'
+  errCode: "401"
+  errMessage: "未授权或token无效"
 }
 
 export interface Error403 extends ErrorResponse {
-  errCode: '403'
-  errMessage: '权限不足'
+  errCode: "403"
+  errMessage: "权限不足"
 }
 
 export interface Error404 extends ErrorResponse {
-  errCode: '404'
-  errMessage: '资源未找到'
+  errCode: "404"
+  errMessage: "资源未找到"
 }
 
 export interface Error500 extends ErrorResponse {
-  errCode: '500'
-  errMessage: '服务器内部错误'
+  errCode: "500"
+  errMessage: "服务器内部错误"
 }
 
 /** 分页请求基础类型 */
@@ -101,4 +101,3 @@ export interface ApiError {
   message: string
   details?: string
 }
-

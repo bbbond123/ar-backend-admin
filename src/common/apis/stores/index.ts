@@ -1,24 +1,24 @@
-import type { ApiResponse, PaginationResponse } from '../type'
+import type { ApiResponse, PaginationResponse } from "../type"
 import type {
-  Store,
   CreateStoreRequest,
-  UpdateStoreRequest,
+  CreateTagRequest,
+  Store,
   StoreListRequest,
   StoreTag,
-  CreateTagRequest,
-  UpdateTagRequest,
-  TagListRequest
-} from './type'
-import { request } from '@/http/axios'
+  TagListRequest,
+  UpdateStoreRequest,
+  UpdateTagRequest
+} from "./type"
+import { request } from "@/http/axios"
 
-const BASE_URL = '/api/v1/stores'
-const TAG_URL = '/api/v1/tags'
+const BASE_URL = "/api/v1/stores"
+const TAG_URL = "/api/v1/tags"
 
 /** 获取商店列表 */
 export function getStoreListApi(params: StoreListRequest) {
   return request<ApiResponse<PaginationResponse<Store>>>({
     url: `${BASE_URL}/list`,
-    method: 'get',
+    method: "get",
     params
   })
 }
@@ -27,7 +27,7 @@ export function getStoreListApi(params: StoreListRequest) {
 export function getStoreDetailApi(storeId: number) {
   return request<ApiResponse<Store>>({
     url: `${BASE_URL}/${storeId}`,
-    method: 'get'
+    method: "get"
   })
 }
 
@@ -35,7 +35,7 @@ export function getStoreDetailApi(storeId: number) {
 export function createStoreApi(data: CreateStoreRequest) {
   return request<ApiResponse<Store>>({
     url: BASE_URL,
-    method: 'post',
+    method: "post",
     data
   })
 }
@@ -44,7 +44,7 @@ export function createStoreApi(data: CreateStoreRequest) {
 export function updateStoreApi(data: UpdateStoreRequest) {
   return request<ApiResponse<Store>>({
     url: `${BASE_URL}/${data.store_id}`,
-    method: 'put',
+    method: "put",
     data
   })
 }
@@ -53,7 +53,7 @@ export function updateStoreApi(data: UpdateStoreRequest) {
 export function deleteStoreApi(storeId: number) {
   return request<ApiResponse<void>>({
     url: `${BASE_URL}/${storeId}`,
-    method: 'delete'
+    method: "delete"
   })
 }
 
@@ -61,7 +61,7 @@ export function deleteStoreApi(storeId: number) {
 export function getTagListApi(params: TagListRequest) {
   return request<ApiResponse<PaginationResponse<StoreTag>>>({
     url: `${TAG_URL}/list`,
-    method: 'get',
+    method: "get",
     params
   })
 }
@@ -70,7 +70,7 @@ export function getTagListApi(params: TagListRequest) {
 export function createTagApi(data: CreateTagRequest) {
   return request<ApiResponse<StoreTag>>({
     url: TAG_URL,
-    method: 'post',
+    method: "post",
     data
   })
 }
@@ -79,7 +79,7 @@ export function createTagApi(data: CreateTagRequest) {
 export function updateTagApi(data: UpdateTagRequest) {
   return request<ApiResponse<StoreTag>>({
     url: `${TAG_URL}/${data.tag_id}`,
-    method: 'put',
+    method: "put",
     data
   })
 }
@@ -88,7 +88,7 @@ export function updateTagApi(data: UpdateTagRequest) {
 export function deleteTagApi(tagId: number) {
   return request<ApiResponse<void>>({
     url: `${TAG_URL}/${tagId}`,
-    method: 'delete'
+    method: "delete"
   })
 }
 
@@ -96,7 +96,7 @@ export function deleteTagApi(tagId: number) {
 export function getStoreTagsApi(storeId: number) {
   return request<ApiResponse<StoreTag[]>>({
     url: `${BASE_URL}/${storeId}/tags`,
-    method: 'get'
+    method: "get"
   })
 }
 
@@ -104,7 +104,7 @@ export function getStoreTagsApi(storeId: number) {
 export function addStoreTagApi(storeId: number, tagId: number) {
   return request<ApiResponse<void>>({
     url: `${BASE_URL}/${storeId}/tags/${tagId}`,
-    method: 'post'
+    method: "post"
   })
 }
 
@@ -112,6 +112,6 @@ export function addStoreTagApi(storeId: number, tagId: number) {
 export function removeStoreTagApi(storeId: number, tagId: number) {
   return request<ApiResponse<void>>({
     url: `${BASE_URL}/${storeId}/tags/${tagId}`,
-    method: 'delete'
+    method: "delete"
   })
-} 
+}

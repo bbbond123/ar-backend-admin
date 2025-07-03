@@ -1,13 +1,13 @@
-import type { PaginationRequest } from '../type'
+import type { IBaseResponse, PaginationRequest } from "../type"
 
 /** 用户状态 */
-export type UserStatus = 'active' | 'pending' | 'inactive'
+export type UserStatus = "active" | "pending" | "inactive"
 
 /** 用户认证提供商 */
-export type AuthProvider = 'email' | 'google' | 'apple'
+export type AuthProvider = "email" | "google" | "apple"
 
 /** 用户性别 */
-export type Gender = 'male' | 'female'
+export type Gender = "male" | "female"
 
 /** 用户基础信息 */
 export interface User {
@@ -24,6 +24,7 @@ export interface User {
   status: UserStatus
   googleId?: string
   appleId?: string
+  password?: string
   createdAt: string
   updatedAt: string
 }
@@ -84,8 +85,47 @@ export interface UserStatistics {
   timestamp: string
 }
 
+/** 登录请求 */
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+/** 登录响应 */
+export interface LoginResponse {
+  access_token: string
+  refresh_token: string
+}
+
+/** 刷新令牌请求 */
+export interface RefreshTokenRequest {
+  refresh_token: string
+}
+
+/** 注册请求 */
+export interface RegisterRequest {
+  email: string
+  password: string
+}
+
+/** 验证邮箱请求 */
+export interface VerifyEmailRequest {
+  email: string
+  verify_code: string
+}
+
+/** 重发验证码请求 */
+export interface ResendVerifyCodeRequest {
+  email: string
+}
+
+// 兼容性类型别名
+export type UserReqCreate = CreateUserRequest
+export type UserReqEdit = UpdateUserRequest
+export type UserReqList = UserListRequest
+
 // API响应类型
-export type CurrentUserResponseData = ApiResponseData<{ username: string, roles: string[] }>
-export type UserResponseData = ApiResponseData<User>
-export type UserListResponseData = ApiResponseData<User[]>
-export type UserStatisticsResponseData = ApiResponseData<UserStatistics>
+export type CurrentUserResponseData = IBaseResponse<{ username: string, roles: string[] }>
+export type UserResponseData = IBaseResponse<User>
+export type UserListResponseData = IBaseResponse<User[]>
+export type UserStatisticsResponseData = IBaseResponse<UserStatistics>

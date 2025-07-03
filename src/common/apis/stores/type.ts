@@ -1,4 +1,4 @@
-import type { PaginationRequest } from '../type'
+import type { PaginationRequest } from "../type"
 
 /** 商店基础信息 */
 export interface Store {
@@ -78,4 +78,4 @@ export interface UpdateTagRequest {
 /** 标签列表请求 */
 export interface TagListRequest extends PaginationRequest {
   is_active?: boolean
-} 
+}

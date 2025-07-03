@@ -1,3 +1,163 @@
+<script setup lang="ts">
+import type { User, UserReqList, UserStatistics } from "@@/apis/users/type"
+import * as UserApi from "@@/apis/users"
+import { usePagination } from "@@/composables/usePagination"
+import { formatDateTime } from "@@/utils/datetime"
+import { Check, CirclePlus, Clock, Close, Refresh, RefreshRight, Search, User as UserIcon } from "@element-plus/icons-vue"
+import { ElMessage, ElMessageBox } from "element-plus"
+import { onMounted, reactive, ref, watchEffect } from "vue"
+import UserDialog from "./components/UserDialog.vue"
+
+defineOptions({
+  name: "Users"
+})
+
+const loading = ref<boolean>(false)
+const { paginationData, handleCurrentChange, handleSizeChange } = usePagination()
+
+// #region 搜索
+const searchFormRef = ref()
+const searchData = reactive<UserReqList>({
+  page: 1,
+  pageSize: 10,
+  userId: undefined,
+  name: "",
+  email: "",
+  status: undefined,
+  provider: undefined
+})
+
+function handleSearch() {
+  paginationData.currentPage = 1
+  getTableData()
+}
+
+function resetSearch() {
+  searchFormRef.value?.resetFields()
+  handleSearch()
+}
+// #endregion
+
+// #region 用户统计
+const userStatistics = ref<UserStatistics>({
+  totalUsers: 0,
+  activeUsers: 0,
+  pendingUsers: 0,
+  inactiveUsers: 0,
+  emailUsers: 0,
+  googleUsers: 0,
+  appleUsers: 0,
+  timestamp: ""
+})
+
+async function getUserStatistics() {
+  try {
+    const res = await UserApi.getUserStatisticsApi()
+    if (res.data) {
+      userStatistics.value = res.data
+    }
+  } catch (error) {
+    console.error("获取用户统计信息失败:", error)
+  }
+}
+// #endregion
+
+// #region 增删改查
+const tableData = ref<User[]>([])
+
+async function getTableData() {
+  loading.value = true
+  try {
+    const params: UserReqList = {
+      page: paginationData.currentPage,
+      pageSize: paginationData.page_size,
+      userId: searchData.userId,
+      name: searchData.name,
+      email: searchData.email,
+      phoneNumber: searchData.phoneNumber,
+      gender: searchData.gender,
+      provider: searchData.provider,
+      status: searchData.status
+    }
+    const res = await UserApi.getUserListApi(params)
+    tableData.value = res.data || []
+    paginationData.total = res.total || 0
+  } catch (error) {
+    console.error("获取用户列表失败:", error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// #region 弹窗
+const dialogVisible = ref<boolean>(false)
+const dialogType = ref<"view" | "create" | "edit">("view")
+const currentUser = ref<Partial<User>>({})
+
+function handleCreate() {
+  dialogType.value = "create"
+  currentUser.value = {}
+  dialogVisible.value = true
+}
+
+function handleView(row: User) {
+  dialogType.value = "view"
+  currentUser.value = { ...row }
+  dialogVisible.value = true
+}
+
+function handleEdit(row: User) {
+  dialogType.value = "edit"
+  currentUser.value = { ...row }
+  dialogVisible.value = true
+}
+// #endregion
+
+function handleDelete(row: User) {
+  ElMessageBox.confirm(`确认删除用户"${row.name}"吗？`, "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning"
+  }).then(async () => {
+    try {
+      await UserApi.deleteUserApi(row.userId)
+      ElMessage.success("删除成功")
+      getTableData()
+      getUserStatistics()
+    } catch (error) {
+      console.error("删除用户失败:", error)
+    }
+  })
+}
+
+function handleInitSample() {
+  ElMessageBox.confirm("确认初始化示例用户数据吗？", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "info"
+  }).then(async () => {
+    try {
+      await UserApi.initSampleUsersApi()
+      ElMessage.success("初始化示例数据成功")
+      getTableData()
+      getUserStatistics()
+    } catch (error) {
+      console.error("初始化示例数据失败:", error)
+    }
+  })
+}
+// #endregion
+
+/** 监听分页参数的变化 */
+watchEffect(() => {
+  getTableData()
+})
+
+onMounted(() => {
+  getUserStatistics()
+})
+</script>
+
 <template>
   <div class="app-container">
     <!-- 搜索表单 -->
@@ -55,7 +215,9 @@
           <el-button type="primary" :icon="Search" @click="handleSearch">
             搜索
           </el-button>
-          <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
+          <el-button :icon="Refresh" @click="resetSearch">
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -66,12 +228,16 @@
         <el-col :span="6">
           <el-card shadow="hover" class="statistics-card">
             <div class="statistics-item">
-                             <div class="statistics-icon total">
-                 <el-icon><UserIcon /></el-icon>
-               </div>
+              <div class="statistics-icon total">
+                <el-icon><UserIcon /></el-icon>
+              </div>
               <div class="statistics-content">
-                <div class="statistics-title">用户总数</div>
-                <div class="statistics-value">{{ userStatistics.totalUsers }}</div>
+                <div class="statistics-title">
+                  用户总数
+                </div>
+                <div class="statistics-value">
+                  {{ userStatistics.totalUsers }}
+                </div>
               </div>
             </div>
           </el-card>
@@ -83,8 +249,12 @@
                 <el-icon><Check /></el-icon>
               </div>
               <div class="statistics-content">
-                <div class="statistics-title">活跃用户</div>
-                <div class="statistics-value">{{ userStatistics.activeUsers }}</div>
+                <div class="statistics-title">
+                  活跃用户
+                </div>
+                <div class="statistics-value">
+                  {{ userStatistics.activeUsers }}
+                </div>
               </div>
             </div>
           </el-card>
@@ -96,8 +266,12 @@
                 <el-icon><Clock /></el-icon>
               </div>
               <div class="statistics-content">
-                <div class="statistics-title">待验证用户</div>
-                <div class="statistics-value">{{ userStatistics.pendingUsers }}</div>
+                <div class="statistics-title">
+                  待验证用户
+                </div>
+                <div class="statistics-value">
+                  {{ userStatistics.pendingUsers }}
+                </div>
               </div>
             </div>
           </el-card>
@@ -109,8 +283,12 @@
                 <el-icon><Close /></el-icon>
               </div>
               <div class="statistics-content">
-                <div class="statistics-title">非活跃用户</div>
-                <div class="statistics-value">{{ userStatistics.inactiveUsers }}</div>
+                <div class="statistics-title">
+                  非活跃用户
+                </div>
+                <div class="statistics-value">
+                  {{ userStatistics.inactiveUsers }}
+                </div>
               </div>
             </div>
           </el-card>
@@ -139,34 +317,50 @@
         <el-table :data="tableData" border>
           <el-table-column prop="userId" label="用户ID" width="80" align="center" />
           <el-table-column prop="avatar" label="头像" width="80" align="center">
-                         <template #default="{ row }">
-               <el-avatar :src="row.avatar" :size="40">
-                 <el-icon><UserIcon /></el-icon>
-               </el-avatar>
-             </template>
+            <template #default="{ row }">
+              <el-avatar :src="row.avatar" :size="40">
+                <el-icon><UserIcon /></el-icon>
+              </el-avatar>
+            </template>
           </el-table-column>
           <el-table-column prop="name" label="用户名" min-width="120" />
           <el-table-column prop="email" label="邮箱" min-width="200" />
           <el-table-column prop="phoneNumber" label="手机号" min-width="120" />
           <el-table-column prop="gender" label="性别" width="80" align="center">
             <template #default="{ row }">
-              <el-tag v-if="row.gender === 'male'" type="primary" size="small">男</el-tag>
-              <el-tag v-else-if="row.gender === 'female'" type="danger" size="small">女</el-tag>
+              <el-tag v-if="row.gender === 'male'" type="primary" size="small">
+                男
+              </el-tag>
+              <el-tag v-else-if="row.gender === 'female'" type="danger" size="small">
+                女
+              </el-tag>
               <span v-else>-</span>
             </template>
           </el-table-column>
           <el-table-column prop="provider" label="注册方式" width="100" align="center">
             <template #default="{ row }">
-              <el-tag v-if="row.provider === 'email'" type="info" size="small">邮箱</el-tag>
-              <el-tag v-else-if="row.provider === 'google'" type="warning" size="small">Google</el-tag>
-              <el-tag v-else-if="row.provider === 'apple'" type="success" size="small">Apple</el-tag>
+              <el-tag v-if="row.provider === 'email'" type="info" size="small">
+                邮箱
+              </el-tag>
+              <el-tag v-else-if="row.provider === 'google'" type="warning" size="small">
+                Google
+              </el-tag>
+              <el-tag v-else-if="row.provider === 'apple'" type="success" size="small">
+                Apple
+              </el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="status" label="状态" width="100" align="center">
             <template #default="{ row }">
-              <el-tag v-if="row.status === 'active'" type="success" size="small">活跃</el-tag>
-              <el-tag v-else-if="row.status === 'pending'" type="warning" size="small">待验证</el-tag>
-              <el-tag v-else-if="row.status === 'inactive'" type="danger" size="small">非活跃</el-tag>
+              <el-tag v-if="row.status === 'active'" type="success" size="small">
+                活跃
+              </el-tag>
+              <el-tag v-else-if="row.status === 'pending'" type="warning" size="small">
+                待验证
+              </el-tag>
+              <el-tag v-else-if="row.status === 'inactive'" type="danger" size="small">
+                非活跃
+              </el-tag>
             </template>
           </el-table-column>
           <el-table-column prop="createdAt" label="创建时间" width="180" align="center">
@@ -195,7 +389,7 @@
           :layout="paginationData.layout"
           :page-sizes="paginationData.pageSizes"
           :total="paginationData.total"
-          :page-size="paginationData.pageSize"
+          :page-size="paginationData.page_size"
           :current-page="paginationData.currentPage"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -212,166 +406,6 @@
     />
   </div>
 </template>
-
-<script setup lang="ts">
-import { reactive, ref, onMounted, watchEffect } from "vue"
-import { ElMessage, ElMessageBox } from "element-plus"
-import { Search, Refresh, CirclePlus, RefreshRight, User as UserIcon, Check, Clock, Close } from "@element-plus/icons-vue"
-import { usePagination } from "@@/composables/usePagination"
-import { formatDateTime } from "@@/utils/datetime"
-import * as UserApi from "@@/apis/users"
-import type { User, UserReqList, UserStatistics } from "@@/apis/users/type"
-import UserDialog from "./components/UserDialog.vue"
-
-defineOptions({
-  name: "Users"
-})
-
-const loading = ref<boolean>(false)
-const { paginationData, handleCurrentChange, handleSizeChange } = usePagination()
-
-//#region 搜索
-const searchFormRef = ref()
-const searchData = reactive<UserReqList>({
-  page: 1,
-  pageSize: 10,
-  userId: undefined,
-  name: "",
-  email: "",
-  status: undefined,
-  provider: undefined
-})
-
-const handleSearch = () => {
-  paginationData.currentPage = 1
-  getTableData()
-}
-
-const resetSearch = () => {
-  searchFormRef.value?.resetFields()
-  handleSearch()
-}
-//#endregion
-
-//#region 用户统计
-const userStatistics = ref<UserStatistics>({
-  totalUsers: 0,
-  activeUsers: 0,
-  pendingUsers: 0,
-  inactiveUsers: 0,
-  emailUsers: 0,
-  googleUsers: 0,
-  appleUsers: 0,
-  timestamp: ""
-})
-
-const getUserStatistics = async () => {
-  try {
-    const res = await UserApi.getUserStatisticsApi()
-    if (res.data) {
-      userStatistics.value = res.data
-    }
-  } catch (error) {
-    console.error("获取用户统计信息失败:", error)
-  }
-}
-//#endregion
-
-//#region 增删改查
-const tableData = ref<User[]>([])
-
-const getTableData = async () => {
-  loading.value = true
-  try {
-    const params: UserReqList = {
-      page: paginationData.currentPage,
-      pageSize: paginationData.page_size,
-      userId: searchData.userId,
-      name: searchData.name,
-      email: searchData.email,
-      phoneNumber: searchData.phoneNumber,
-      gender: searchData.gender,
-      provider: searchData.provider,
-      status: searchData.status
-    }
-    const res = await UserApi.getUserListApi(params)
-    tableData.value = res.data || []
-    paginationData.total = res.total || 0
-  } catch (error) {
-    console.error("获取用户列表失败:", error)
-  } finally {
-    loading.value = false
-  }
-}
-
-//#region 弹窗
-const dialogVisible = ref<boolean>(false)
-const dialogType = ref<"view" | "create" | "edit">("view")
-const currentUser = ref<Partial<User>>({})
-
-const handleCreate = () => {
-  dialogType.value = "create"
-  currentUser.value = {}
-  dialogVisible.value = true
-}
-
-const handleView = (row: User) => {
-  dialogType.value = "view"
-  currentUser.value = { ...row }
-  dialogVisible.value = true
-}
-
-const handleEdit = (row: User) => {
-  dialogType.value = "edit"
-  currentUser.value = { ...row }
-  dialogVisible.value = true
-}
-//#endregion
-
-const handleDelete = (row: User) => {
-  ElMessageBox.confirm(`确认删除用户"${row.name}"吗？`, "警告", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning"
-  }).then(async () => {
-    try {
-      await UserApi.deleteUserApi(row.userId)
-      ElMessage.success("删除成功")
-      getTableData()
-      getUserStatistics()
-    } catch (error) {
-      console.error("删除用户失败:", error)
-    }
-  })
-}
-
-const handleInitSample = () => {
-  ElMessageBox.confirm("确认初始化示例用户数据吗？", "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "info"
-  }).then(async () => {
-    try {
-      await UserApi.initSampleUsersApi()
-      ElMessage.success("初始化示例数据成功")
-      getTableData()
-      getUserStatistics()
-    } catch (error) {
-      console.error("初始化示例数据失败:", error)
-    }
-  })
-}
-//#endregion
-
-/** 监听分页参数的变化 */
-watchEffect(() => {
-  getTableData()
-})
-
-onMounted(() => {
-  getUserStatistics()
-})
-</script>
 
 <style lang="scss" scoped>
 .search-wrapper {

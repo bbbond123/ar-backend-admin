@@ -1,6 +1,6 @@
 import type * as Auth from "./type"
+import type { IBaseResponse } from "@/common/apis/type"
 import { request } from "@/http/axios"
-import { IBaseResponse } from "@/common/apis/type"
 
 /** 获取登录验证码 */
 export function getCaptchaApi() {

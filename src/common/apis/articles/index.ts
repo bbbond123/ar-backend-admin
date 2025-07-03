@@ -1,7 +1,7 @@
+import type { IBaseResponse, IResponse } from "../type"
 import type * as Articles from "./type"
+import type { Article, ArticleComments, LikeAricle } from "./type"
 import { request } from "@/http/axios"
-import { Article, ArticleComments, LikeAricle } from "./type"
-import { IBaseResponse, IResponse } from "../type"
 
 /** 获取文章列表 */
 export function getArticleListApi(data: Articles.ArticleListRequest): Promise<IResponse<Article>> {
@@ -43,11 +43,11 @@ export function createArticleWithImageApi(data: Articles.CreateArticleWithImageR
   const formData = new FormData()
 
   // 添加文章基本信息
-  Object.keys(data).forEach(key => {
-    if (key === 'images') return
+  Object.keys(data).forEach((key) => {
+    if (key === "images") return
     const value = data[key as keyof Articles.CreateArticleWithImageRequest]
     if (value !== undefined && value !== null) {
-      if (typeof value === 'object' && Array.isArray(value)) {
+      if (typeof value === "object" && Array.isArray(value)) {
         formData.append(key, JSON.stringify(value))
       } else {
         formData.append(key, String(value))
@@ -67,7 +67,7 @@ export function createArticleWithImageApi(data: Articles.CreateArticleWithImageR
     method: "post",
     data: formData,
     headers: {
-      'Content-Type': 'multipart/form-data'
+      "Content-Type": "multipart/form-data"
     }
   })
 }

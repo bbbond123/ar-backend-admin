@@ -1,3 +1,188 @@
+<script setup lang="ts">
+import type { Article, ArticleListRequest } from "@@/apis/articles/type"
+import { deleteArticleApi, getArticleListApi } from "@@/apis/articles"
+import { usePagination } from "@@/composables/usePagination"
+import {
+  Delete,
+  Plus,
+  Refresh,
+  RefreshRight,
+  Search
+} from "@element-plus/icons-vue"
+import { ElMessage, ElMessageBox } from "element-plus"
+import { reactive, ref, watch } from "vue"
+import ArticleComments from "./components/ArticleComments.vue"
+import ArticleDetail from "./components/ArticleDetail.vue"
+import ArticleEdit from "./components/ArticleEdit.vue"
+
+defineOptions({
+  name: "Articles"
+})
+
+const loading = ref<boolean>(false)
+const { paginationData, handleCurrentChange, handleSizeChange }
+  = usePagination()
+
+// 搜索数据
+const searchData = reactive<Partial<ArticleListRequest>>({
+  title: "",
+  category: "",
+  locationName: "",
+  bodyText: ""
+})
+
+// 表格数据
+const tableData = ref<Article[]>([])
+const selectedArticles = ref<Article[]>([])
+
+// 弹窗控制
+const detailVisible = ref(false)
+const editVisible = ref(false)
+const commentsVisible = ref(false)
+const currentArticleId = ref<number>(0)
+const currentArticleTitle = ref("")
+
+// 获取表格数据
+async function getTableData() {
+  loading.value = true
+  try {
+    const params: ArticleListRequest = {
+      page: paginationData.currentPage,
+      pageSize: paginationData.page_size,
+      ...searchData
+    }
+
+    if (params.title === "") {
+      delete params.title
+    }
+    if (params.category === "") {
+      delete params.category
+    }
+    if (params.locationName === "") {
+      delete params.locationName
+    }
+    if (params.bodyText === "") {
+      delete params.bodyText
+    }
+
+    const res = await getArticleListApi(params)
+
+    if (res.code === 200) {
+      console.log("🚀 ~ getTableData ~ res:", res)
+      tableData.value = res.data
+      paginationData.total = res.total
+    } else {
+      ElMessage.error(res.errMessage)
+    }
+  } catch (error) {
+    console.error("获取文章列表失败:", error)
+    ElMessage.error("获取文章列表失败")
+  } finally {
+    loading.value = false
+  }
+}
+
+// 搜索
+function handleSearch() {
+  paginationData.currentPage = 1
+  getTableData()
+}
+
+// 重置搜索
+function resetSearch() {
+  Object.assign(searchData, {
+    title: "",
+    category: "",
+    locationName: "",
+    bodyText: ""
+  })
+  paginationData.currentPage = 1
+  getTableData()
+}
+
+// 表格选择
+function handleSelectionChange(selection: Article[]) {
+  selectedArticles.value = selection
+}
+
+// 新增文章
+function handleCreate() {
+  currentArticleId.value = 0
+  editVisible.value = true
+}
+
+// 查看文章
+function handleView(row: Article) {
+  currentArticleId.value = row.articleId
+  detailVisible.value = true
+}
+
+// 编辑文章
+function handleEdit(row: Article) {
+  currentArticleId.value = row.articleId
+  editVisible.value = true
+}
+
+// 查看评论
+function handleComments(row: Article) {
+  currentArticleId.value = row.articleId
+  currentArticleTitle.value = row.title
+  commentsVisible.value = true
+}
+
+// 删除文章
+function handleDelete(row: Article) {
+  ElMessageBox.confirm(`正在删除文章：${row.title}，确认删除？`, "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning"
+  }).then(async () => {
+    try {
+      await deleteArticleApi(row.articleId)
+      ElMessage.success("删除成功")
+      getTableData()
+    } catch (error) {
+      console.error("删除失败:", error)
+      ElMessage.error("删除失败")
+    }
+  })
+}
+
+// 批量删除
+function handleBatchDelete() {
+  const titles = selectedArticles.value.map(item => item.title).join("、")
+  ElMessageBox.confirm(`正在删除文章：${titles}，确认删除？`, "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning"
+  }).then(async () => {
+    try {
+      const promises = selectedArticles.value.map(item =>
+        deleteArticleApi(item.articleId)
+      )
+      await Promise.all(promises)
+      ElMessage.success("批量删除成功")
+      getTableData()
+    } catch (error) {
+      console.error("批量删除失败:", error)
+      ElMessage.error("批量删除失败")
+    }
+  })
+}
+
+// 格式化日期时间
+function formatDateTime(dateTime: string) {
+  return new Date(dateTime).toLocaleString("zh-CN")
+}
+
+// 监听分页变化
+watch(
+  [() => paginationData.currentPage, () => paginationData.page_size],
+  getTableData,
+  { immediate: true }
+)
+</script>
+
 <template>
   <div class="app-container">
     <!-- 搜索栏 -->
@@ -33,10 +218,12 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" :icon="Search" @click="handleSearch"
-            >搜索</el-button
-          >
-          <el-button :icon="Refresh" @click="resetSearch">重置</el-button>
+          <el-button type="primary" :icon="Search" @click="handleSearch">
+            搜索
+          </el-button>
+          <el-button :icon="Refresh" @click="resetSearch">
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -45,9 +232,9 @@
     <el-card v-loading="loading" shadow="never">
       <div class="toolbar-wrapper">
         <div>
-          <el-button type="primary" :icon="Plus" @click="handleCreate"
-            >新增文章</el-button
-          >
+          <el-button type="primary" :icon="Plus" @click="handleCreate">
+            新增文章
+          </el-button>
           <el-button
             type="danger"
             :icon="Delete"
@@ -222,191 +409,6 @@
     />
   </div>
 </template>
-
-<script setup lang="ts">
-import { reactive, ref, watch } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
-import {
-  Search,
-  Refresh,
-  Plus,
-  Delete,
-  RefreshRight,
-} from "@element-plus/icons-vue";
-import { usePagination } from "@@/composables/usePagination";
-import { getArticleListApi, deleteArticleApi } from "@@/apis/articles";
-import type { Article, ArticleListRequest } from "@@/apis/articles/type";
-import ArticleDetail from "./components/ArticleDetail.vue";
-import ArticleEdit from "./components/ArticleEdit.vue";
-import ArticleComments from "./components/ArticleComments.vue";
-
-defineOptions({
-  name: "Articles",
-});
-
-const loading = ref<boolean>(false);
-const { paginationData, handleCurrentChange, handleSizeChange } =
-  usePagination();
-
-// 搜索数据
-const searchData = reactive<Partial<ArticleListRequest>>({
-  title: "",
-  category: "",
-  locationName: "",
-  bodyText: "",
-});
-
-// 表格数据
-const tableData = ref<Article[]>([]);
-const selectedArticles = ref<Article[]>([]);
-
-// 弹窗控制
-const detailVisible = ref(false);
-const editVisible = ref(false);
-const commentsVisible = ref(false);
-const currentArticleId = ref<number>(0);
-const currentArticleTitle = ref("");
-
-// 获取表格数据
-const getTableData = async () => {
-  loading.value = true;
-  try {
-    const params: ArticleListRequest = {
-      page: paginationData.currentPage,
-      pageSize: paginationData.page_size,
-      ...searchData,
-    };
-
-    if (params.title === "") {
-      delete params.title;
-    }
-    if (params.category === "") {
-      delete params.category;
-    }
-    if (params.locationName === "") {
-      delete params.locationName;
-    }
-    if (params.bodyText === "") {
-      delete params.bodyText;
-    }
-
-    const res = await getArticleListApi(params);
-
-    if (res.code === 200) {
-      console.log("🚀 ~ getTableData ~ res:", res);
-      tableData.value = res.data;
-      paginationData.total = res.total;
-    } else {
-      ElMessage.error(res.errMessage);
-    }
-  } catch (error) {
-    console.error("获取文章列表失败:", error);
-    ElMessage.error("获取文章列表失败");
-  } finally {
-    loading.value = false;
-  }
-};
-
-// 搜索
-const handleSearch = () => {
-  paginationData.currentPage = 1;
-  getTableData();
-};
-
-// 重置搜索
-const resetSearch = () => {
-  Object.assign(searchData, {
-    title: "",
-    category: "",
-    locationName: "",
-    bodyText: "",
-  });
-  paginationData.currentPage = 1;
-  getTableData();
-};
-
-// 表格选择
-const handleSelectionChange = (selection: Article[]) => {
-  selectedArticles.value = selection;
-};
-
-// 新增文章
-const handleCreate = () => {
-  currentArticleId.value = 0;
-  editVisible.value = true;
-};
-
-// 查看文章
-const handleView = (row: Article) => {
-  currentArticleId.value = row.articleId;
-  detailVisible.value = true;
-};
-
-// 编辑文章
-const handleEdit = (row: Article) => {
-  currentArticleId.value = row.articleId;
-  editVisible.value = true;
-};
-
-// 查看评论
-const handleComments = (row: Article) => {
-  currentArticleId.value = row.articleId;
-  currentArticleTitle.value = row.title;
-  commentsVisible.value = true;
-};
-
-// 删除文章
-const handleDelete = (row: Article) => {
-  ElMessageBox.confirm(`正在删除文章：${row.title}，确认删除？`, "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  }).then(async () => {
-    try {
-      await deleteArticleApi(row.articleId);
-      ElMessage.success("删除成功");
-      getTableData();
-    } catch (error) {
-      console.error("删除失败:", error);
-      ElMessage.error("删除失败");
-    }
-  });
-};
-
-// 批量删除
-const handleBatchDelete = () => {
-  const titles = selectedArticles.value.map((item) => item.title).join("、");
-  ElMessageBox.confirm(`正在删除文章：${titles}，确认删除？`, "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  }).then(async () => {
-    try {
-      const promises = selectedArticles.value.map((item) =>
-        deleteArticleApi(item.articleId)
-      );
-      await Promise.all(promises);
-      ElMessage.success("批量删除成功");
-      getTableData();
-    } catch (error) {
-      console.error("批量删除失败:", error);
-      ElMessage.error("批量删除失败");
-    }
-  });
-};
-
-// 格式化日期时间
-const formatDateTime = (dateTime: string) => {
-  return new Date(dateTime).toLocaleString("zh-CN");
-};
-
-// 监听分页变化
-watch(
-  [() => paginationData.currentPage, () => paginationData.page_size],
-  getTableData,
-  { immediate: true }
-);
-</script>
 
 <style lang="scss" scoped>
 .search-wrapper {

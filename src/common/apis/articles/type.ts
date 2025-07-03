@@ -1,9 +1,15 @@
+/** 文章状态 */
+export type ArticleStatus = "draft" | "published" | "archived"
+
 /** 文章基础信息 */
 export interface Article {
   articleId: number
   title: string
   bodyText: string
+  summary?: string
   category?: string
+  status?: ArticleStatus
+  tags?: string[]
   address?: string
   locationName?: string
   latitude?: number
@@ -34,7 +40,10 @@ export interface ArticleComment {
 export interface CreateArticleRequest {
   title: string
   bodyText?: string
+  summary?: string
   category?: string
+  status?: ArticleStatus
+  tags?: string[]
   address?: string
   locationName?: string
   latitude?: number
@@ -50,7 +59,10 @@ export interface UpdateArticleRequest {
   articleId: number
   title?: string
   bodyText?: string
+  summary?: string
   category?: string
+  status?: ArticleStatus
+  tags?: string[]
   address?: string
   locationName?: string
   latitude?: number
@@ -67,7 +79,10 @@ export interface ArticleListRequest {
   pageSize: number
   title?: string
   bodyText?: string
+  summary?: string
   category?: string
+  status?: ArticleStatus
+  tags?: string[]
   address?: string
   locationName?: string
   latitude?: number
@@ -81,6 +96,7 @@ export interface ArticleStatsRequest {
   page: number
   pageSize: number
   category?: string
+  status?: ArticleStatus
   keyword?: string
 }
 

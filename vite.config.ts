@@ -9,8 +9,8 @@ import SvgComponent from "unplugin-svg-component/vite"
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers"
 import Components from "unplugin-vue-components/vite"
 import { defineConfig, loadEnv } from "vite"
+import vueDevTools from "vite-plugin-vue-devtools"
 import svgLoader from "vite-svg-loader"
-import vueDevTools from 'vite-plugin-vue-devtools'
 // Configuring Vite: https://cn.vite.dev/config
 export default defineConfig(({ mode }) => {
   const { VITE_PUBLIC_PATH } = loadEnv(mode, process.cwd(), "") as ImportMetaEnv
@@ -90,7 +90,7 @@ export default defineConfig(({ mode }) => {
           },
     // 插件配置
     plugins: [
-      process.env.NODE_ENV === 'development' && vueDevTools(),
+      process.env.NODE_ENV === "development" && vueDevTools(),
       vue(),
       // 支持 JSX、TSX 语法
       vueJsx(),

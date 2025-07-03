@@ -1,4 +1,4 @@
-import type { PaginationRequest, DateRangeRequest } from '../type'
+import type { DateRangeRequest, PaginationRequest } from "../type"
 
 /** 地标结果 */
 export interface LandmarkResult {
@@ -118,4 +118,4 @@ export interface VisionHistoryResult {
   saved_to_database: boolean
   error_message?: string
   nearby_recommendations: RecommendationItem[]
-} 
+}

@@ -1,6 +1,6 @@
+import type { IBaseResponse, IResponse } from "../type"
+import type { CreateOrUpdateTableRequestData, TableData, TableRequestData } from "./type"
 import { request } from "@/http/axios"
-import { IBaseResponse, IResponse } from "../type"
-import { CreateOrUpdateTableRequestData, TableData, TableRequestData } from "./type"
 
 /** 增 */
 export function createTableDataApi(data: CreateOrUpdateTableRequestData) {

@@ -1,21 +1,21 @@
-import type { ApiResponse, PaginationResponse } from '../type'
+import type { ApiResponse, PaginationResponse } from "../type"
 import type {
-  VisionHistory,
   CreateVisionHistoryRequest,
   UpdateVisionHistoryRequest,
+  VisionHistory,
   VisionHistoryListRequest,
-  VisionHistoryStatistics,
-  VisionHistoryResult
-} from './type'
-import { request } from '@/http/axios'
+  VisionHistoryResult,
+  VisionHistoryStatistics
+} from "./type"
+import { request } from "@/http/axios"
 
-const BASE_URL = '/api/v1/vision-history'
+const BASE_URL = "/api/v1/vision-history"
 
 /** 获取视觉识别历史列表 */
 export function getVisionHistoryListApi(params: VisionHistoryListRequest) {
   return request<ApiResponse<PaginationResponse<VisionHistory>>>({
     url: `${BASE_URL}/list`,
-    method: 'get',
+    method: "get",
     params
   })
 }
@@ -24,7 +24,7 @@ export function getVisionHistoryListApi(params: VisionHistoryListRequest) {
 export function getVisionHistoryDetailApi(visionId: number) {
   return request<ApiResponse<VisionHistory>>({
     url: `${BASE_URL}/${visionId}`,
-    method: 'get'
+    method: "get"
   })
 }
 
@@ -32,7 +32,7 @@ export function getVisionHistoryDetailApi(visionId: number) {
 export function createVisionHistoryApi(data: CreateVisionHistoryRequest) {
   return request<ApiResponse<VisionHistory>>({
     url: BASE_URL,
-    method: 'post',
+    method: "post",
     data
   })
 }
@@ -41,7 +41,7 @@ export function createVisionHistoryApi(data: CreateVisionHistoryRequest) {
 export function updateVisionHistoryApi(data: UpdateVisionHistoryRequest) {
   return request<ApiResponse<VisionHistory>>({
     url: `${BASE_URL}/${data.vision_id}`,
-    method: 'put',
+    method: "put",
     data
   })
 }
@@ -50,7 +50,7 @@ export function updateVisionHistoryApi(data: UpdateVisionHistoryRequest) {
 export function deleteVisionHistoryApi(visionId: number) {
   return request<ApiResponse<void>>({
     url: `${BASE_URL}/${visionId}`,
-    method: 'delete'
+    method: "delete"
   })
 }
 
@@ -58,23 +58,23 @@ export function deleteVisionHistoryApi(visionId: number) {
 export function getVisionHistoryStatisticsApi() {
   return request<ApiResponse<VisionHistoryStatistics>>({
     url: `${BASE_URL}/statistics`,
-    method: 'get'
+    method: "get"
   })
 }
 
 /** 处理图片识别 */
 export function processImageApi(imageFile: File, userId?: number) {
   const formData = new FormData()
-  formData.append('image', imageFile)
+  formData.append("image", imageFile)
   if (userId) {
-    formData.append('user_id', userId.toString())
+    formData.append("user_id", userId.toString())
   }
 
   return request<ApiResponse<VisionHistoryResult>>({
     url: `${BASE_URL}/process`,
-    method: 'post',
+    method: "post",
     headers: {
-      'Content-Type': 'multipart/form-data'
+      "Content-Type": "multipart/form-data"
     },
     data: formData
   })
@@ -84,7 +84,7 @@ export function processImageApi(imageFile: File, userId?: number) {
 export function getUserVisionHistoryStatsApi(userId: number) {
   return request<ApiResponse<VisionHistoryStatistics>>({
     url: `${BASE_URL}/users/${userId}/statistics`,
-    method: 'get'
+    method: "get"
   })
 }
 
@@ -92,11 +92,11 @@ export function getUserVisionHistoryStatsApi(userId: number) {
 export function getLocationVisionHistoryApi(latitude: number, longitude: number, radius: number = 1) {
   return request<ApiResponse<VisionHistory[]>>({
     url: `${BASE_URL}/location`,
-    method: 'get',
+    method: "get",
     params: {
       latitude,
       longitude,
       radius
     }
   })
-} 
+}
