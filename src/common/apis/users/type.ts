@@ -1,72 +1,78 @@
-// 用户数据模型
+import type { PaginationRequest } from '../type'
+
+/** 用户状态 */
+export type UserStatus = 'active' | 'pending' | 'inactive'
+
+/** 用户认证提供商 */
+export type AuthProvider = 'email' | 'google' | 'apple'
+
+/** 用户性别 */
+export type Gender = 'male' | 'female'
+
+/** 用户基础信息 */
 export interface User {
   userId: number
-  name: string
-  nameKana?: string
   email: string
+  name?: string
+  nameKana?: string
   phoneNumber?: string
-  avatar?: string
-  birth?: string
-  gender?: 'male' | 'female'
   address?: string
-  provider: 'email' | 'google' | 'apple'
-  status: 'active' | 'pending' | 'inactive'
+  gender?: Gender
+  birth?: string
+  avatar?: string
+  provider: AuthProvider
+  status: UserStatus
   googleId?: string
   appleId?: string
-  password?: string
-  verifyCode?: string
-  verifyCodeExpire?: string
   createdAt: string
   updatedAt: string
 }
 
-// 创建用户请求
-export interface UserReqCreate {
-  name?: string
-  nameKana?: string
+/** 创建用户请求 */
+export interface CreateUserRequest {
   email: string
-  phoneNumber?: string
-  birth?: string
-  gender?: 'male' | 'female'
-  address?: string
-  provider: 'email' | 'google' | 'apple'
-  status: 'active' | 'pending' | 'inactive'
-  googleId?: string
-  appleId?: string
   password?: string
-}
-
-// 编辑用户请求
-export interface UserReqEdit {
-  userId: number
   name?: string
   nameKana?: string
-  email?: string
   phoneNumber?: string
-  birth?: string
-  gender?: 'male' | 'female'
   address?: string
-  provider?: 'email' | 'google' | 'apple'
-  status?: 'active' | 'pending' | 'inactive'
+  gender?: Gender
+  birth?: string
+  provider: AuthProvider
+  status: UserStatus
   googleId?: string
   appleId?: string
-  password?: string
 }
 
-// 用户列表查询请求
-export interface UserReqList {
-  page: number
-  pageSize: number
-  userId?: number
-  name?: string
+/** 更新用户请求 */
+export interface UpdateUserRequest {
+  userId: number
   email?: string
+  password?: string
+  name?: string
+  nameKana?: string
   phoneNumber?: string
-  gender?: 'male' | 'female'
-  provider?: 'email' | 'google' | 'apple'
-  status?: 'active' | 'pending' | 'inactive'
+  address?: string
+  gender?: Gender
+  birth?: string
+  provider?: AuthProvider
+  status?: UserStatus
+  googleId?: string
+  appleId?: string
 }
 
-// 用户统计数据
+/** 用户列表请求 */
+export interface UserListRequest extends PaginationRequest {
+  userId?: number
+  email?: string
+  name?: string
+  phoneNumber?: string
+  gender?: Gender
+  provider?: AuthProvider
+  status?: UserStatus
+}
+
+/** 用户统计信息 */
 export interface UserStatistics {
   totalUsers: number
   activeUsers: number

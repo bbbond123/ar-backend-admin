@@ -60,3 +60,45 @@ export interface Error500 extends ErrorResponse {
   errMessage: '服务器内部错误'
 }
 
+/** 分页请求基础类型 */
+export interface PaginationRequest {
+  page: number
+  pageSize: number
+  keyword?: string
+}
+
+/** 分页响应基础类型 */
+export interface PaginationResponse<T> {
+  items: T[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+/** API 响应基础类型 */
+export interface ApiResponse<T> {
+  code: number
+  message: string
+  data: T
+}
+
+/** 统计时间范围请求 */
+export interface DateRangeRequest {
+  dateFrom?: string
+  dateTo?: string
+}
+
+/** 坐标位置类型 */
+export interface Location {
+  latitude: number
+  longitude: number
+  address?: string
+}
+
+/** API 错误响应 */
+export interface ApiError {
+  code: number
+  message: string
+  details?: string
+}
+
