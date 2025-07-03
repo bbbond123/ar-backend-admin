@@ -1,4 +1,4 @@
-import type { ApiResponse, PaginationResponse } from '../type'
+import type { ApiResponse, PaginationResponse,IBaseResponse } from '../type'
 import type {
   User,
   CreateUserRequest,
@@ -15,6 +15,14 @@ import type {
 import { request } from '@/http/axios'
 
 const BASE_URL = '/api/v1/users'
+
+/** 获取当前登录用户详情 */
+export function getCurrentUserApi() {
+  return request<IBaseResponse<{ username: string, roles: string[] }>>({
+    url: "/user/me",
+    method: "get"
+  })
+}
 
 /** 获取用户列表 */
 export function getUserListApi(params: UserListRequest) {
