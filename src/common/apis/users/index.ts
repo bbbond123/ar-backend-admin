@@ -25,9 +25,9 @@ export function getCurrentUserApi() {
 }
 
 /** 获取用户列表 */
-export function getUserListApi(data: UserListRequest) {
-  return request<IResponse<User>>({
-    url: "/api/users/list",
+export function getUserListApi(data: Users.UserReqList) {
+  return request<IResponse<Users.User>>({
+    url: "users/list",
     method: "post",
     data
   })
@@ -42,9 +42,9 @@ export function getUserDetailApi(userId: number) {
 }
 
 /** 创建用户 */
-export function createUserApi(data: CreateUserRequest) {
-  return request<IBaseResponse<User>>({
-    url: "/api/users",
+export function createUserApi(data: Users.UserReqCreate) {
+  return request<IBaseResponse<Users.User>>({
+    url: "users",
     method: "post",
     data
   })
@@ -53,24 +53,32 @@ export function createUserApi(data: CreateUserRequest) {
 /** 更新用户 */
 export function updateUserApi(data: UpdateUserRequest) {
   return request<IBaseResponse<any>>({
-    url: "/api/users",
+    url: "users",
     method: "put",
     data
+  })
+}
+
+/** 获取用户详情 */
+export function getUserDetailApi(userId: number) {
+  return request<IBaseResponse<Users.User>>({
+    url: `users/${userId}`,
+    method: "get"
   })
 }
 
 /** 删除用户 */
 export function deleteUserApi(userId: number) {
   return request<IBaseResponse<any>>({
-    url: `/api/users/${userId}`,
+    url: `users/${userId}`,
     method: "delete"
   })
 }
 
 /** 获取用户统计信息 */
 export function getUserStatisticsApi() {
-  return request<IBaseResponse<UserStatistics>>({
-    url: "/api/users/statistics",
+  return request<IBaseResponse<Users.UserStatistics>>({
+    url: "users/statistics",
     method: "get"
   })
 }
@@ -123,7 +131,7 @@ export function resendVerifyCodeApi(data: ResendVerifyCodeRequest) {
 /** 初始化示例用户数据 */
 export function initSampleUsersApi() {
   return request<IBaseResponse<any>>({
-    url: "/api/users/init-sample",
+    url: "users/init-sample",
     method: "post"
   })
 }
