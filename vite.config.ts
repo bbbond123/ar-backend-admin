@@ -38,8 +38,8 @@ export default defineConfig(({ mode }) => {
       // 反向代理
       proxy: {
         "/api": {
-          // target: "https://www.ifoodme.com",
-          target: "http://localhost:3000",
+          target: "https://www.ifoodme.com",
+          // target: "http://localhost:3000",
           changeOrigin: true
         }
       },
