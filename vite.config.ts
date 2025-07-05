@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
   const { VITE_PUBLIC_PATH } = loadEnv(mode, process.cwd(), "") as ImportMetaEnv
   return {
     // 开发或打包构建时用到的公共基础路径
-    base: "/admin/",
+    base: "/",
     resolve: {
       alias: {
         // @ 符号指向 src 目录
@@ -38,8 +38,8 @@ export default defineConfig(({ mode }) => {
       // 反向代理
       proxy: {
         "/api": {
-          target: "https://www.ifoodme.com",
-          // target: "http://localhost:3000",
+          // target: "https://www.ifoodme.com",
+          target: "http://localhost:3000",
           changeOrigin: true
         }
       },

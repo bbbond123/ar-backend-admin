@@ -407,6 +407,166 @@ onMounted(() => {
   </div>
 </template>
 
+<script setup lang="ts">
+import { reactive, ref, onMounted, watchEffect } from "vue"
+import { ElMessage, ElMessageBox } from "element-plus"
+import { Search, Refresh, CirclePlus, RefreshRight, User as UserIcon, Check, Clock, Close } from "@element-plus/icons-vue"
+import { usePagination } from "@@/composables/usePagination"
+import { formatDateTime } from "@@/utils/datetime"
+import * as UserApi from "@@/apis/users"
+import type { User, UserReqList, UserStatistics } from "@@/apis/users/type"
+import UserDialog from "./components/UserDialog.vue"
+
+defineOptions({
+  name: "Users"
+})
+
+const loading = ref<boolean>(false)
+const { paginationData, handleCurrentChange, handleSizeChange } = usePagination()
+
+//#region 搜索
+const searchFormRef = ref()
+const searchData = reactive<UserReqList>({
+  page: 1,
+  pageSize: 10,
+  userId: undefined,
+  name: "",
+  email: "",
+  phoneNumber: undefined,
+  gender: undefined,
+  provider: undefined,
+  status: undefined
+})
+
+const handleSearch = () => {
+  paginationData.currentPage = 1
+  getTableData()
+}
+
+const resetSearch = () => {
+  searchFormRef.value?.resetFields()
+  handleSearch()
+}
+//#endregion
+
+//#region 用户统计
+const userStatistics = ref<UserStatistics>({
+  totalUsers: 0,
+  activeUsers: 0,
+  pendingUsers: 0,
+  inactiveUsers: 0,
+  emailUsers: 0,
+  googleUsers: 0,
+  appleUsers: 0,
+  timestamp: ""
+})
+
+const getUserStatistics = async () => {
+  try {
+    const res = await UserApi.getUserStatisticsApi()
+    if (res.success && res.data) {
+      userStatistics.value = res.data
+    } else {
+      ElMessage.error(res.errMessage || "获取用户统计信息失败")
+    }
+  } catch (error: any) {
+    console.error("获取用户统计信息失败:", error)
+    ElMessage.error(error?.message || "获取用户统计信息失败")
+  }
+}
+//#endregion
+
+//#region 增删改查
+const tableData = ref<User[]>([])
+
+const getTableData = async () => {
+  loading.value = true
+  try {
+    const { page, pageSize, ...searchParams } = searchData
+    const params: UserReqList = {
+      page: paginationData.currentPage,
+      pageSize: paginationData.page_size,
+      ...searchParams
+    }
+    const res = await UserApi.getUserListApi(params)
+    tableData.value = res.data || []
+    paginationData.total = res.total || 0
+  } catch (error) {
+    console.error("获取用户列表失败:", error)
+  } finally {
+    loading.value = false
+  }
+}
+
+//#region 弹窗
+const dialogVisible = ref<boolean>(false)
+const dialogType = ref<"view" | "create" | "edit">("view")
+const currentUser = ref<Partial<User>>({})
+
+const handleCreate = () => {
+  dialogType.value = "create"
+  currentUser.value = {}
+  dialogVisible.value = true
+}
+
+const handleView = (row: User) => {
+  dialogType.value = "view"
+  currentUser.value = { ...row }
+  dialogVisible.value = true
+}
+
+const handleEdit = (row: User) => {
+  dialogType.value = "edit"
+  currentUser.value = { ...row }
+  dialogVisible.value = true
+}
+//#endregion
+
+const handleDelete = (row: User) => {
+  ElMessageBox.confirm(`确认删除用户"${row.name}"吗？`, "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning"
+  }).then(async () => {
+    try {
+      await UserApi.deleteUserApi(row.userId)
+      ElMessage.success("删除成功")
+      getTableData()
+      getUserStatistics()
+    } catch (error) {
+      console.error("删除用户失败:", error)
+    }
+  })
+}
+
+const handleInitSample = () => {
+  ElMessageBox.confirm("确认初始化示例用户数据吗？", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "info"
+  }).then(async () => {
+    try {
+      await UserApi.initSampleUsersApi()
+      ElMessage.success("初始化示例数据成功")
+      getTableData()
+      getUserStatistics()
+    } catch (error) {
+      console.error("初始化示例数据失败:", error)
+    }
+  })
+}
+//#endregion
+
+/** 监听分页参数的变化 */
+watchEffect(() => {
+  getTableData()
+})
+
+onMounted(() => {
+  getUserStatistics()
+})
+</script>
+
 <style lang="scss" scoped>
 .search-wrapper {
   margin-bottom: 20px;
